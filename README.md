@@ -6,10 +6,9 @@ An x64 UEFI hobby OS.
 The bootloader is written in C, as it does not require more advanced features, while the kernel is written in C++.
 
 ## Use
-``git clone --recurse-submodules https://github.com/catgirladdict/hobby-os
-
+```Bash
+git clone --recurse-submodules https://github.com/catgirladdict/hobby-os
 cd hobby-os
-
-./run.sh``
+./run.sh```
 
 A focus of this project is to have as easy setup as possible, so all you need is QEMU and clang.
