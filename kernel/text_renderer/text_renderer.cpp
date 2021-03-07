@@ -4,6 +4,7 @@ TextRenderer::TextRenderer(GraphicsInfo graphics_info) {
 	this->m_graphics_info = graphics_info;
 	this->set_cursor_x(0);
 	this->set_cursor_y(0);
+	this->set_color(0xffffff);
 }
 
 void TextRenderer::set_cursor_x(uint16_t x) {
@@ -22,6 +23,18 @@ uint16_t TextRenderer::cursor_y() {
 	return this->m_cursor_y;
 }
 
+void TextRenderer::set_color(uint32_t color) {
+	this->m_color = color;
+}
+
+uint32_t TextRenderer::color() {
+	return this->m_color;
+}
+
+void TextRenderer::draw_pixel(uint32_t x, uint32_t y) {
+	this->m_graphics_info.address[y * this->m_graphics_info.width + x] = this->color();
+}
+
 bool TextRenderer::draw_character(char c) {
 	int char_index;
 	if (c >= ' ' && c <= '~') {
@@ -35,12 +48,9 @@ bool TextRenderer::draw_character(char c) {
 			int array_index = (char_index * 8) + y;
 			int bit_index = 8 - x;
 			if (((font[array_index] >> bit_index) & 1) == 1) {
-				uint8_t *pixel = (uint8_t*) ((uint64_t) this->m_graphics_info.address + (x * 4) + (y * 4 * this->m_graphics_info.width));
-				pixel += this->m_cursor_x * 4 * 7;
-				pixel += this->m_cursor_y * this->m_graphics_info.width * 4 * 10;
-				pixel[0] = 0xff;
-				pixel[1] = 0xff;
-				pixel[2] = 0xff;
+				uint32_t cursor_x_offset = this->m_cursor_x * 7;
+				uint32_t cursor_y_offset = this->m_cursor_y * 10;
+				this->draw_pixel(x + cursor_x_offset, y + cursor_y_offset);
 			}
 		}
 	}

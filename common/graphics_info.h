@@ -1,7 +1,7 @@
 #pragma once
 
 typedef struct {
-	void *address;
+	uint32_t *address;
 	uint64_t buffer_size;
 	uint64_t width;
 	uint64_t height;
