@@ -1,13 +1,13 @@
 BOOTLOADER:
-* remove watchdog timer
-* read kernel file into buffer
-* allocate enough pages for kernel
-* write kernel into memory
-* free original kernel buffer
-- switch into graphics mode
-* get memory map
-* exit boot services
-* call kernel main with required arguments (pointer to ACPI table, memory map, pointer to graphics protocol instance)
+* remove watchdog timer (done)
+* read kernel file into buffer (done)
+* allocate enough pages for kernel (done)
+* write kernel into memory (done)
+* free original kernel buffer (code written but commented out because it's buggy)
+* get memory map (done)
+* get GOP info
+* exit boot services (done)
+* call kernel main with required arguments (pointer to ACPI table, memory map, GOP info) (done)
 
 KERNEL:
 * disable interrupts until we are able to handle them
