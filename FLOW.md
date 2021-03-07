@@ -5,14 +5,14 @@ BOOTLOADER:
 * write kernel into memory (done)
 * free original kernel buffer (code written but commented out because it's buggy)
 * get memory map (done)
-* get GOP info
+* get GOP info (done)
 * exit boot services (done)
 * call kernel main with required arguments (pointer to ACPI table, memory map, GOP info) (done)
 
 KERNEL:
 * disable interrupts until we are able to handle them
 - check if CPU supports required features
-- setup text rendering and import font files
+- setup text rendering and import font files (done)
 - init ACPI
 * init GDT (includes TSS)
 * init APIC

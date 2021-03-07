@@ -13,6 +13,7 @@ mkdir fs/EFI/Custom
 cp BOOTX64.efi fs/EFI/BOOT
 cp kernel.elf fs/EFI/Custom
 qemu-system-x86_64 \
+				-vga virtio \
 				-cpu qemu64 \
 				-bios /usr/share/OVMF/x64/OVMF.fd \
 				-net none \

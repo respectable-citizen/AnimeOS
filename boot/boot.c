@@ -1,9 +1,11 @@
 #include <efi.h>
 #include <protocol/efi-sfsp.h>
 #include <protocol/efi-lip.h>
+#include <protocol/efi-gop.h>
 
 #include "elf.h"
 #include "../common/memory_map.h"
+#include "../common/graphics_info.h"
 
 #define kernel_path L"\\EFI\\Custom\\kernel.elf"
 
@@ -48,7 +50,7 @@ CHAR16* EFI_ERRORS[] = {
 	L"EFI_HTTP_ERROR"
 };
 
-typedef __attribute__((sysv_abi)) uint64_t(*KernelEntryPoint)(MemoryMap); 
+typedef __attribute__((sysv_abi)) void(*KernelEntryPoint)(MemoryMap, GraphicsInfo); 
 
 void hang() {
 		for (;;);
@@ -222,6 +224,22 @@ KernelEntryPoint load_kernel() {
 	return (KernelEntryPoint) elf_header->entry_point;
 }
 
+GraphicsInfo initialize_graphics() {
+	EFI_GUID gop_guid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
+	EFI_GRAPHICS_OUTPUT_PROTOCOL *gop;
+
+	status = BS->LocateProtocol(&gop_guid, 0, (void**) &gop);
+	error_check(L"LocateProtocol gop");
+
+	GraphicsInfo graphics_info;
+	graphics_info.address = (void*) gop->Mode->FrameBufferBase;
+	graphics_info.buffer_size = gop->Mode->FrameBufferSize;
+	graphics_info.width = gop->Mode->Info->HorizontalResolution;
+	graphics_info.height = gop->Mode->Info->VerticalResolution;
+	graphics_info.pixels_per_scanline = gop->Mode->Info->PixelsPerScanLine;
+	return graphics_info;
+}
+
 //TODO: Write your own UEFI call wrapper which integrates error checking
 EFI_STATUS efi_main (EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *systab) {
 	//TODO: Investigate the InitializeLib function and see if it is necessary (our current EFI headers don't support it)
@@ -240,9 +258,15 @@ EFI_STATUS efi_main (EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *systab) {
 
 	KernelEntryPoint entry_point = load_kernel();
 	MemoryMap memory_map = get_memory_map();
+	GraphicsInfo graphics_info = initialize_graphics();
+	if (graphics_info.width != graphics_info.pixels_per_scanline) {
+		//I don't understand the different between these 2 metrics and I believe they will always be the same. Just in case they aren't, fail loudly.
+		ST->ConOut->OutputString(ST->ConOut, L"Mismatch between width and pixels per scanline.");
+		hang();
+	}
+
 	BS->ExitBootServices(IH, memory_map.map_key);
-	
-	entry_point(memory_map);
+	entry_point(memory_map, graphics_info);
 	
 	ST->ConOut->ClearScreen(ST->ConOut);
 	ST->ConOut->OutputString(ST->ConOut, L"Kernel exited, this should never happen.\r\n");
