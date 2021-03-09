@@ -10,7 +10,7 @@ BOOTLOADER:
 * call kernel main with required arguments (pointer to ACPI table, memory map, GOP info) (done)
 
 KERNEL:
-* disable interrupts until we are able to handle them
+* disable interrupts until we are able to handle them (done)
 - check if CPU supports required features
 - setup text rendering and import font files (done)
 - init ACPI
