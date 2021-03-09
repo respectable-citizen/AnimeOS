@@ -3,7 +3,7 @@ BOOTLOADER:
 * read kernel file into buffer (done)
 * allocate enough pages for kernel (done)
 * write kernel into memory (done)
-* free original kernel buffer (code written but commented out because it's buggy)
+* free original kernel buffer (done)
 * get memory map (done)
 * get GOP info (done)
 * exit boot services (done)

@@ -223,13 +223,14 @@ KernelEntryPoint load_kernel(uint64_t *kernel_start, uint64_t *kernel_end) {
 			}
 		}
 	}
-	
-	//FIXME: For some god forsaken reason this throws an error every time, so I've had to comment it out for now
+
+	uint64_t elf_entry_point = elf_header->entry_point;
+
 	//Free original kernel buffer
-	//status = BS->FreePool(&kernel_buffer);
-	//error_check(L"FreePool kernel_buffer");
-	
-	return (KernelEntryPoint) elf_header->entry_point;
+	status = BS->FreePages((EFI_PHYSICAL_ADDRESS) kernel_buffer, pages_required);
+	error_check(L"FreePages kernel_buffer");
+
+	return (KernelEntryPoint) elf_entry_point;
 }
 
 GraphicsInfo initialize_graphics() {
