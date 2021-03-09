@@ -19,6 +19,18 @@ extern "C" void entry_point(MemoryMap memory_map, GraphicsInfo graphics_info, ui
 	TextRenderer::set_color(0xffffff);
 	TextRenderer::draw_string((char* ) "Initialising memory manager\r\n");
 	MemoryManager::initialise(memory_map, kernel_start, kernel_end);
+	
+	TextRenderer::draw_string((char*) "test\r\n");
+	
+	/*
+	int physical_page = MemoryManager::allocate_pages(1);
+	int virtual_page = MemoryManager::allocate_pages(1);
+
+	*((uint8_t*) MemoryManager::page_number_to_address(physical_page)) = 255;
+
+	MemoryManager::setup_page_translation(physical_page, virtual_page, 1);
+	TextRenderer::draw_string((char*) "test\r\n");
+*/
 
 	hang();
 }

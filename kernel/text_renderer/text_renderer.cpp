@@ -39,6 +39,10 @@ namespace TextRenderer {
 		return m_cursor_y;
 	}
 	
+	GraphicsInfo graphics_info() {
+		return m_graphics_info;
+	}
+
 	void set_color(uint32_t color) {
 		m_color = color;
 	}

@@ -18,4 +18,5 @@ qemu-system-x86_64 \
 				-bios /usr/share/OVMF/x64/OVMF.fd \
 				-net none \
 				-m 13G \
+				--no-shutdown --no-reboot \
 				-drive file=fat:rw:fs #-drive format=raw,file=disk.img

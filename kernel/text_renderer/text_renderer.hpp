@@ -12,6 +12,7 @@ namespace TextRenderer {
 	void reset_cursor();
 	uint16_t cursor_x();
 	uint16_t cursor_y();
+	GraphicsInfo graphics_info();
 	void set_color(uint32_t);
 	uint32_t color();
 	void draw_pixel(uint32_t, uint32_t);
