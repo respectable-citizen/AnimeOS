@@ -107,6 +107,7 @@ namespace MemoryManager {
 
 			}
 		}
+		if (contiguous_pages != page_count) TextRenderer::kernel_panic((char*) "Could not find sufficient contiguous pages.");
 
 		return page_start;
 	}
