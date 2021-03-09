@@ -1,0 +1,73 @@
+kernel/kernel.cpp:21:6: error: unused variable 'page_number' [-Werror,-Wunused-variable]
+        int page_number = MemoryManager::find_contiguous_pages(4000);
+            ^
+1 error generated.
+kernel/memory_manager.cpp:120:17: error: call to 'modify_pages' is ambiguous
+                free_pages -= modify_pages(start_page, page_count, PAGE_FREE, false);
+                              ^~~~~~~~~~~~
+kernel/memory_manager.hpp:19:11: note: candidate function
+        uint64_t modify_pages(uint64_t, uint64_t, uint8_t, bool);
+                 ^
+kernel/memory_manager.cpp:106:7: note: candidate function
+        void modify_pages(uint64_t start_page, uint64_t page_count, uint64_t attribute, bool add) {
+             ^
+kernel/memory_manager.cpp:124:17: error: call to 'modify_pages' is ambiguous
+                free_pages += modify_pages(start_page, page_count, PAGE_FREE, true);
+                              ^~~~~~~~~~~~
+kernel/memory_manager.hpp:19:11: note: candidate function
+        uint64_t modify_pages(uint64_t, uint64_t, uint8_t, bool);
+                 ^
+kernel/memory_manager.cpp:106:7: note: candidate function
+        void modify_pages(uint64_t start_page, uint64_t page_count, uint64_t attribute, bool add) {
+             ^
+kernel/memory_manager.cpp:128:29: error: call to 'modify_pages' is ambiguous
+                uint64_t modified_pages = modify_pages(start_page, page_count, PAGE_RESERVED, true);
+                                          ^~~~~~~~~~~~
+kernel/memory_manager.hpp:19:11: note: candidate function
+        uint64_t modify_pages(uint64_t, uint64_t, uint8_t, bool);
+                 ^
+kernel/memory_manager.cpp:106:7: note: candidate function
+        void modify_pages(uint64_t start_page, uint64_t page_count, uint64_t attribute, bool add) {
+             ^
+kernel/memory_manager.cpp:129:18: error: invalid operands to binary expression ('uint64_t ()' (aka 'unsigned long ()') and 'uint64_t' (aka 'unsigned long'))
+                reserved_pages += modified_pages;
+                ~~~~~~~~~~~~~~ ^  ~~~~~~~~~~~~~~
+kernel/memory_manager.cpp:130:3: error: reference to overloaded function could not be resolved; did you mean to call it with no arguments?
+                free_pages -= modified_pages;
+                ^~~~~~~~~~
+                          ()
+kernel/memory_manager.cpp:123:7: note: possible target for call
+        void free_pages(uint64_t start_page, uint64_t page_count) {
+             ^
+kernel/memory_manager.cpp:69:11: note: possible target for call
+        uint64_t free_pages() {
+                 ^
+kernel/memory_manager.cpp:130:14: error: expression is not assignable
+                free_pages -= modified_pages;
+                ~~~~~~~~~~ ^
+kernel/memory_manager.cpp:134:29: error: call to 'modify_pages' is ambiguous
+                uint64_t modified_pages = modify_pages(start_page, page_count, PAGE_RESERVED, false);
+                                          ^~~~~~~~~~~~
+kernel/memory_manager.hpp:19:11: note: candidate function
+        uint64_t modify_pages(uint64_t, uint64_t, uint8_t, bool);
+                 ^
+kernel/memory_manager.cpp:106:7: note: candidate function
+        void modify_pages(uint64_t start_page, uint64_t page_count, uint64_t attribute, bool add) {
+             ^
+kernel/memory_manager.cpp:135:18: error: invalid operands to binary expression ('uint64_t ()' (aka 'unsigned long ()') and 'uint64_t' (aka 'unsigned long'))
+                reserved_pages -= modified_pages;
+                ~~~~~~~~~~~~~~ ^  ~~~~~~~~~~~~~~
+kernel/memory_manager.cpp:136:3: error: reference to overloaded function could not be resolved; did you mean to call it with no arguments?
+                free_pages += modified_pages;
+                ^~~~~~~~~~
+                          ()
+kernel/memory_manager.cpp:123:7: note: possible target for call
+        void free_pages(uint64_t start_page, uint64_t page_count) {
+             ^
+kernel/memory_manager.cpp:69:11: note: possible target for call
+        uint64_t free_pages() {
+                 ^
+kernel/memory_manager.cpp:136:14: error: expression is not assignable
+                free_pages += modified_pages;
+                ~~~~~~~~~~ ^
+10 errors generated.

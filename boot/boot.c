@@ -50,7 +50,7 @@ CHAR16* EFI_ERRORS[] = {
 	L"EFI_HTTP_ERROR"
 };
 
-typedef __attribute__((sysv_abi)) void(*KernelEntryPoint)(MemoryMap, GraphicsInfo); 
+typedef __attribute__((sysv_abi)) void(*KernelEntryPoint)(MemoryMap, GraphicsInfo, uint64_t, uint64_t); 
 
 void hang() {
 		for (;;);
@@ -121,7 +121,7 @@ MemoryMap get_memory_map() {
 	return memory_map;
 }
 
-KernelEntryPoint load_kernel() {
+KernelEntryPoint load_kernel(uint64_t *kernel_start, uint64_t *kernel_end) {
 	//Make sure the simple file protocol is supported
 	EFI_LOADED_IMAGE_PROTOCOL *loaded_image;
 	EFI_GUID li_guid = EFI_LOADED_IMAGE_PROTOCOL_GUID;
@@ -166,7 +166,7 @@ KernelEntryPoint load_kernel() {
 
 	UINTN pages_required = (file_size / 4096) + 1;
 	uint8_t *kernel_buffer;
-	status = BS->AllocatePages(AllocateAnyPages, EfiBootServicesData, pages_required, (EFI_PHYSICAL_ADDRESS*) kernel_buffer);
+	status = BS->AllocatePages(AllocateAnyPages, EfiBootServicesData, pages_required, (EFI_PHYSICAL_ADDRESS*) &kernel_buffer);
 	error_check(L"AllocatePages kernel_buffer");
 	
 	status = kernel_file->Read(kernel_file, &file_size, (void*) kernel_buffer);
@@ -186,6 +186,11 @@ KernelEntryPoint load_kernel() {
 		hang();
 	}
 
+	if (elf_header->type != 2) {
+		ST->ConOut->OutputString(ST->ConOut, L"Kernel must be compiled as executable (-static)\r\n");
+		hang();
+	}
+
 	uint64_t lowest_address = -1;
 	uint64_t highest_address = -1;
 	for (int i = 0; i < elf_header->header_entry_count; i++) {
@@ -196,6 +201,9 @@ KernelEntryPoint load_kernel() {
 			if (highest_address == -1 || memory_end > highest_address) highest_address = memory_end;
 		}
 	}
+
+	*kernel_start = lowest_address;
+	*kernel_end = highest_address;
 	
 	uint64_t program_size = highest_address - lowest_address;
 	pages_required = (program_size / 4096) + 1;
@@ -256,7 +264,9 @@ EFI_STATUS efi_main (EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *systab) {
 	status = BS->SetWatchdogTimer(0, 0, 0, 0);
 	error_check(L"ClearWatchdogTimer");
 
-	KernelEntryPoint entry_point = load_kernel();
+	uint64_t kernel_start;
+	uint64_t kernel_end;
+	KernelEntryPoint entry_point = load_kernel(&kernel_start, &kernel_end);
 	MemoryMap memory_map = get_memory_map();
 	GraphicsInfo graphics_info = initialize_graphics();
 	if (graphics_info.width != graphics_info.pixels_per_scanline) {
@@ -266,7 +276,7 @@ EFI_STATUS efi_main (EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *systab) {
 	}
 
 	BS->ExitBootServices(IH, memory_map.map_key);
-	entry_point(memory_map, graphics_info);
+	entry_point(memory_map, graphics_info, kernel_start, kernel_end);
 	
 	ST->ConOut->ClearScreen(ST->ConOut);
 	ST->ConOut->OutputString(ST->ConOut, L"Kernel exited, this should never happen.\r\n");

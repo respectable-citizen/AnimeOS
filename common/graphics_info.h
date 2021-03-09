@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GRAPHICS_INFO_H
+#define GRAPHICS_INFO_H
 
 typedef struct {
 	uint32_t *address;
@@ -7,3 +8,5 @@ typedef struct {
 	uint64_t height;
 	uint64_t pixels_per_scanline;
 } GraphicsInfo;
+
+#endif
