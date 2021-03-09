@@ -52,3 +52,5 @@ Mkfile.old
 dkms.conf
 
 BOOTX64.efi
+fs/NvVars
+
