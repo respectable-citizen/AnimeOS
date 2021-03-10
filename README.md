@@ -1,4 +1,4 @@
-# hobby-os
+# AnimeOS
 An x64 UEFI hobby OS.
 
 [FLOW.md](FLOW.md) describes the order of tasks which are executed to get the system running, this is just for my reference.
