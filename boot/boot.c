@@ -250,7 +250,7 @@ GraphicsInfo initialize_graphics() {
 }
 
 //TODO: Write your own UEFI call wrapper which integrates error checking
-EFI_STATUS efi_main (EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *systab) {
+EFI_STATUS efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *systab) {
 	//TODO: Investigate the InitializeLib function and see if it is necessary (our current EFI headers don't support it)
 	//InitializeLib(IH, systab);
 	ST = systab;
