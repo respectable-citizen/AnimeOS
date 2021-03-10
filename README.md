@@ -9,8 +9,8 @@ Not POSIX-compliant but many functions will be named accordingly (eg. memcpy).
 
 ## Use
 ```Bash
-git clone --recurse-submodules https://github.com/catgirladdict/hobby-os
-cd hobby-os
+git clone --recurse-submodules https://github.com/catgirladdict/AnimeOS
+cd AnimeOS
 ./run.sh
 ```
 
