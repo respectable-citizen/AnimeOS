@@ -19,7 +19,6 @@ load_gdt:
 	mov %ax, %es
 	mov %ax, %fs
 	mov %ax, %gs
-	mov %ax, %ss
 
 	#Begin execution after iretq at return_to_kernel label
 	movabs $return_to_kernel, %rax
