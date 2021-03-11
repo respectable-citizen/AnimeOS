@@ -14,7 +14,8 @@ KERNEL:
 - check if CPU supports required features
 - setup text rendering and import font files (done)
 - init ACPI
-* init GDT (includes TSS)
+* init GDT (done)
+* init TSS
 * init APIC
 * init interrupt handling
 * init exception handlers

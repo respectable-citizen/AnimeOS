@@ -11,9 +11,9 @@ Not POSIX-compliant but many functions will be named accordingly (eg. memcpy).
 Done:
 * Text renderer
 * Memory manager
+* GDT
 
 Planned (Could change at any time):
-* GDT
 * IDT
 * initrd
 * Filesystem

@@ -18,22 +18,18 @@ namespace VMM {
 
 		current_paging_table = kernel_paging_table;
 		
-		kernel_page = 1;
-		kernel_size_pages = 1;
-
 		//Identity map first 1MiB (it may be in use by firmware)
-		//VMM::set_page_translation(0, 0, 256);
-		//VMM::set_page_translation(kernel_page + kernel_size_pages, kernel_page + kernel_size_pages, PMM::total_pages());
+		VMM::set_page_translation(0, 0, 256);
 
-		//Identity map kernespace
+		//Identity map kernelspace
 		VMM::set_page_translation(kernel_page, kernel_page, kernel_size_pages);
 
 		//Also identity map the framebuffer
 		uint64_t framebuffer_page = PMM::address_to_page_number(TextRenderer::graphics_info().address);
 		uint64_t framebuffer_page_count = (TextRenderer::graphics_info().buffer_size / 4096) + 1;
-		//VMM::set_page_translation(framebuffer_page + framebuffer_page_count, framebuffer_page + framebuffer_page_count, PMM::total_pages());
+		VMM::set_page_translation(framebuffer_page + framebuffer_page_count, framebuffer_page + framebuffer_page_count, PMM::total_pages());
 		VMM::set_page_translation(framebuffer_page, framebuffer_page, framebuffer_page_count);
-		for (;;);
+		
 		asm ("mov %0, %%cr3" : : "r" (current_paging_table)); //Now that we have setup the kernel VAS, we can safely enable paging without messing anything up
 	}
 

@@ -13,7 +13,7 @@ clang -I efi -I common -target x86_64-pc-win32-coff -fno-builtin -ffreestanding 
 lld-link -subsystem:efi_application -nodefaultlib -dll -entry:efi_main boot.o -out:BOOTX64.efi
 
 #Compile kernel
-clang -I efi -I common -I kernel -I kernel/text_renderer -I kernel/lib -I kernel/memory_manager -ffreestanding -fno-stack-protector -nostdlib -fuse-ld=lld -static -T kernel/kernel.lds \
+clang -I efi -I common -I kernel -I kernel/text_renderer -I kernel/lib -I kernel/memory_manager -I kernel/gdt -ffreestanding -fno-stack-protector -nostdlib -fuse-ld=lld -static -T kernel/kernel.lds \
 				-Wall -Wextra -Werror -Wmissing-field-initializers -Wuninitialized \
 				kernel/kernel.cpp \
 				kernel/text_renderer/text_renderer.cpp \
@@ -23,4 +23,6 @@ clang -I efi -I common -I kernel -I kernel/text_renderer -I kernel/lib -I kernel
 				kernel/utils.cpp \
 				kernel/memory_manager/pmm.cpp \
 				kernel/memory_manager/vmm.cpp \
+				kernel/gdt/gdt.cpp \
+				kernel/gdt/gdt.s \
 				-o kernel.elf

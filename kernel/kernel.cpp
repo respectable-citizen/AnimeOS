@@ -7,6 +7,8 @@
 
 #include "lib/memory.hpp"
 
+#include "gdt/gdt.hpp"
+
 #include "memory_manager/vmm.hpp"
 #include "memory_manager/pmm.hpp"
 
@@ -18,7 +20,12 @@ extern "C" void entry_point(MemoryMap memory_map, GraphicsInfo graphics_info, ui
 	TextRenderer::initialise(graphics_info);
 	TextRenderer::set_color(0xff0000);
 	TextRenderer::draw_string((char* ) "AnimeOS booting\r\n\r\n");
+	TextRenderer::set_color(0xffffff);
+	
+	TextRenderer::draw_string((char* ) "Initialising GDT\r\n");
 
+	GDT::initialise();
+	
 	TextRenderer::set_color(0xffffff);
 	TextRenderer::draw_string((char* ) "Initialising memory manager\r\n");
 
@@ -26,14 +33,6 @@ extern "C" void entry_point(MemoryMap memory_map, GraphicsInfo graphics_info, ui
 	uint64_t kernel_page_end = PMM::address_to_page_number((void*) kernel_end) + 1;
 	uint64_t kernel_size_pages = kernel_page_end - kernel_page;
 	
-	hang();
-	/*
-	uint64_t number = 22421511;
-	uint64_t *p = (uint64_t*) number;
-	TextRenderer::draw_number((uint64_t) p);
-	hang();
-*/
-
 	PMM::initialise(memory_map, kernel_page, kernel_size_pages);
 	VMM::initialise(kernel_page, kernel_size_pages);
 
