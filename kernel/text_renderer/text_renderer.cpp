@@ -94,9 +94,9 @@ namespace TextRenderer {
 			draw_character('0');
 			return;
 		}
-		char chars[20];
-		chars[19] = '\0';
-		int i = 18;
+		char chars[30];
+		chars[29] = '\0';
+		int i = 28;
 		for (;;) {
 			int digit = number % 10;
 			chars[i--] = '0' + digit;

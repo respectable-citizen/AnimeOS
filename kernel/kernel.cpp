@@ -5,7 +5,10 @@
 
 #include "utils.hpp"
 
-#include "memory_manager.hpp"
+#include "lib/memory.hpp"
+
+#include "memory_manager/vmm.hpp"
+#include "memory_manager/pmm.hpp"
 
 #include "text_renderer/text_renderer.hpp"
 
@@ -14,23 +17,27 @@ extern "C" void entry_point(MemoryMap memory_map, GraphicsInfo graphics_info, ui
 				
 	TextRenderer::initialise(graphics_info);
 	TextRenderer::set_color(0xff0000);
-	TextRenderer::draw_string((char* ) "AnimeRetard OS v1.0 booting\r\n\r\n");
+	TextRenderer::draw_string((char* ) "AnimeOS booting\r\n\r\n");
 
 	TextRenderer::set_color(0xffffff);
 	TextRenderer::draw_string((char* ) "Initialising memory manager\r\n");
-	MemoryManager::initialise(memory_map, kernel_start, kernel_end);
+
+	uint64_t kernel_page = PMM::address_to_page_number((void*) kernel_start);
+	uint64_t kernel_page_end = PMM::address_to_page_number((void*) kernel_end) + 1;
+	uint64_t kernel_size_pages = kernel_page_end - kernel_page;
 	
-	TextRenderer::draw_string((char*) "test\r\n");
-	
+	hang();
 	/*
-	int physical_page = MemoryManager::allocate_pages(1);
-	int virtual_page = MemoryManager::allocate_pages(1);
-
-	*((uint8_t*) MemoryManager::page_number_to_address(physical_page)) = 255;
-
-	MemoryManager::setup_page_translation(physical_page, virtual_page, 1);
-	TextRenderer::draw_string((char*) "test\r\n");
+	uint64_t number = 22421511;
+	uint64_t *p = (uint64_t*) number;
+	TextRenderer::draw_number((uint64_t) p);
+	hang();
 */
+
+	PMM::initialise(memory_map, kernel_page, kernel_size_pages);
+	VMM::initialise(kernel_page, kernel_size_pages);
+
+	TextRenderer::kernel_panic((char*) "ladies and gentleman we got em");
 
 	hang();
 }
