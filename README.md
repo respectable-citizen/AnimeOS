@@ -7,6 +7,19 @@ The bootloader is written in C, as it does not require more advanced features, w
 
 Not POSIX-compliant but many functions will be named accordingly (eg. memcpy).
 
+## Roadmap
+Done:
+* Text renderer
+* Memory manager
+
+Planned (Could change at any time):
+* GDT
+* IDT
+* initrd
+* Filesystem
+* ELF loader
+* Userspace
+
 ## Use
 ```Bash
 git clone --recurse-submodules https://github.com/catgirladdict/AnimeOS

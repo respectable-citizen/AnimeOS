@@ -33,7 +33,7 @@ namespace VMM {
 		uint64_t framebuffer_page_count = (TextRenderer::graphics_info().buffer_size / 4096) + 1;
 		//VMM::set_page_translation(framebuffer_page + framebuffer_page_count, framebuffer_page + framebuffer_page_count, PMM::total_pages());
 		VMM::set_page_translation(framebuffer_page, framebuffer_page, framebuffer_page_count);
-		
+		for (;;);
 		asm ("mov %0, %%cr3" : : "r" (current_paging_table)); //Now that we have setup the kernel VAS, we can safely enable paging without messing anything up
 	}
 

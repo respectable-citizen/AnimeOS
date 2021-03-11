@@ -19,7 +19,7 @@ KERNEL:
 * init interrupt handling
 * init exception handlers
 * re-enable interrupts
-* initialise virtual memory using memory map
+* initialise virtual memory using memory map (done)
 * init timer
 * init keyboard controller
 * init random
