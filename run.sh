@@ -18,5 +18,5 @@ qemu-system-x86_64 \
 				-bios /usr/share/OVMF/x64/OVMF.fd \
 				-net none \
 				-m 10G \
-				--no-shutdown --no-reboot \
+				--no-shutdown --no-reboot -d int -s -S \
 				-drive file=fat:rw:fs #-drive format=raw,file=disk.img

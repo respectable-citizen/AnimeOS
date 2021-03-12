@@ -276,7 +276,8 @@ EFI_STATUS efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *systab) {
 		hang();
 	}
 
-	BS->ExitBootServices(IH, memory_map.map_key);
+	status = BS->ExitBootServices(IH, memory_map.map_key);
+	error_check(L"ExitBootServices");
 	entry_point(memory_map, graphics_info, kernel_start, kernel_end);
 	
 	ST->ConOut->ClearScreen(ST->ConOut);
