@@ -34,6 +34,7 @@ namespace IDT {
 		idtr.size = sizeof(m_IDT) - 1;
 		idtr.address = (uint64_t) m_IDT;
 
+		//Load IDT and re-enable interrupts because we can now handle them
 		asm("lidt %0" : : "m" (idtr));
 		asm("sti");
 	}

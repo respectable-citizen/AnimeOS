@@ -1,7 +1,6 @@
 #include <efi.h>
 
-#include "../common/graphics_info.h"
-#include "../common/memory_map.h"
+#include "../common/kernel_arguments.h"
 
 #include "utils.hpp"
 
@@ -16,9 +15,19 @@
 
 #include "text_renderer/text_renderer.hpp"
 
-extern "C" void kernel_main(MemoryMap memory_map, GraphicsInfo graphics_info, uint64_t kernel_start, uint64_t kernel_end) {
+extern "C" void kernel_main() {
 	asm("cli"); //Disable interrupts until we can handle them
-				
+	
+	//Read kernel arguments out of RDI register and decompose the struct into individual variables
+	KernelArguments *kernel_arguments;
+	asm volatile ("mov %%rdi, %0": "=g"(kernel_arguments)::"memory");
+
+	MemoryMap memory_map = kernel_arguments->memory_map;
+	GraphicsInfo graphics_info = kernel_arguments->graphics_info;
+	uint64_t kernel_start = kernel_arguments->kernel_start;
+	uint64_t kernel_end  = kernel_arguments->kernel_end;
+
+	//Initialise kernel
 	TextRenderer::initialise(graphics_info);
 	TextRenderer::set_color(0xff0000);
 	TextRenderer::draw_string((char* ) "AnimeOS booting\r\n\r\n");
@@ -29,9 +38,6 @@ extern "C" void kernel_main(MemoryMap memory_map, GraphicsInfo graphics_info, ui
 	
 	TextRenderer::draw_string((char* ) "Initialising IDT\r\n");
 	IDT::initialise();
-	TextRenderer::draw_string((char* ) "idt: \r\n");
-	TextRenderer::draw_number((uint64_t) IDT::idt());
-	TextRenderer::draw_string((char* ) "\r\n");
 	
 	TextRenderer::draw_string((char* ) "Initialising memory manager\r\n");
 
@@ -41,9 +47,6 @@ extern "C" void kernel_main(MemoryMap memory_map, GraphicsInfo graphics_info, ui
 	
 	PMM::initialise(memory_map, kernel_page, kernel_size_pages);
 	VMM::initialise(kernel_page, kernel_size_pages);
-	for (;;);
-
-	TextRenderer::kernel_panic((char*) "ladies and gentleman we got em");
 
 	hang();
 }

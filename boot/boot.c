@@ -4,8 +4,7 @@
 #include <protocol/efi-gop.h>
 
 #include "elf.h"
-#include "../common/memory_map.h"
-#include "../common/graphics_info.h"
+#include "../common/kernel_arguments.h"
 
 #define kernel_path L"\\EFI\\Custom\\kernel.elf"
 
@@ -50,7 +49,7 @@ CHAR16* EFI_ERRORS[] = {
 	L"EFI_HTTP_ERROR"
 };
 
-typedef __attribute__((sysv_abi)) void(*KernelEntryPoint)(MemoryMap, GraphicsInfo, uint64_t, uint64_t); 
+typedef void(*KernelEntryPoint)(); 
 
 void hang() {
 		for (;;);
@@ -249,6 +248,13 @@ GraphicsInfo initialize_graphics() {
 	return graphics_info;
 }
 
+void* memcpy(void *destination, void *source, uint64_t size) {
+	uint8_t *destination_bytes = (uint8_t*) destination;
+	uint8_t *source_bytes = (uint8_t*) source;
+	for (uint64_t i = 0; i < size; i++) *(destination_bytes + i) = *(source_bytes + i);
+	return destination;
+}
+
 //TODO: Write your own UEFI call wrapper which integrates error checking
 EFI_STATUS efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *systab) {
 	//TODO: Investigate the InitializeLib function and see if it is necessary (our current EFI headers don't support it)
@@ -275,10 +281,20 @@ EFI_STATUS efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *systab) {
 		ST->ConOut->OutputString(ST->ConOut, L"Mismatch between width and pixels per scanline.");
 		hang();
 	}
-
+	
 	status = BS->ExitBootServices(IH, memory_map.map_key);
 	error_check(L"ExitBootServices");
-	entry_point(memory_map, graphics_info, kernel_start, kernel_end);
+
+	KernelArguments kernel_arguments;
+	kernel_arguments.memory_map = memory_map;
+	kernel_arguments.graphics_info = graphics_info;
+	kernel_arguments.kernel_start = kernel_start;
+	kernel_arguments.kernel_end = kernel_end;
+
+	//TODO: We are literally inventing our own calling convention at this point, find a better way to do this
+	asm("mov %0, %%rdi" : : "g" (&kernel_arguments));
+
+	entry_point();
 	
 	ST->ConOut->ClearScreen(ST->ConOut);
 	ST->ConOut->OutputString(ST->ConOut, L"Kernel exited, this should never happen.\r\n");

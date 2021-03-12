@@ -17,9 +17,9 @@ KERNEL:
 * init GDT (done)
 * init TSS
 * init APIC
-* init interrupt handling
-* init exception handlers
-* re-enable interrupts
+* init interrupt handling (done)
+* init exception handlers (done)
+* re-enable interrupts (done)
 * initialise virtual memory using memory map (done)
 * init timer
 * init keyboard controller

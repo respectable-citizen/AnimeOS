@@ -7,17 +7,15 @@ The bootloader is written in C, as it does not require more advanced features, w
 
 Not POSIX-compliant but many functions will be named accordingly (eg. memcpy).
 
-As of now booting the system causes a triple fault, I believe this is because we unmap the IDT that UEFI makes for us. So, the current task is to make an IDT :)
-
 ## Roadmap
 Done:
 * Text renderer
 * Memory manager
 * GDT
+* IDT
 
 Planned (Could change at any time) (also in a very vague order):
-* IDT (next)
-* Heap
+* Heap (done)
 * Scheduler
 * SMP
 * initrd

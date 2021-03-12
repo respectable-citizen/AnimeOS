@@ -147,12 +147,7 @@ namespace PMM {
 			reserve_pages(page_number, page_count);
 		else
 			lock_pages(page_number, page_count);
-		/*TextRenderer::draw_string((char*) "Found page: ");
-		TextRenderer::draw_number((uint64_t) page_number);
-		TextRenderer::draw_string((char*) "\r\n");*/
-		if (page_number == 1048575) {
-			TextRenderer::draw_string((char*) "i am a bad boy because i allocated a naughty page\r\n");
-		}
+		
 		return page_number;
 	}
 
