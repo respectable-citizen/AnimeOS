@@ -15,7 +15,7 @@ Done:
 * IDT
 
 Planned (Could change at any time) (also in a very vague order):
-* Heap (done)
+* Heap (next)
 * Scheduler
 * SMP
 * initrd
