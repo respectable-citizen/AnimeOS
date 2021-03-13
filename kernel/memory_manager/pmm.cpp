@@ -141,12 +141,24 @@ namespace PMM {
 		m_free_pages += modified_pages;
 	}
 
+	uint64_t allocate_pages_without_mapping(uint64_t page_count, bool reserve) {
+		uint64_t page_number = find_contiguous_pages(page_count);
+		if (reserve)
+			reserve_pages(page_number, page_count);
+		else
+			lock_pages(page_number, page_count);
+		
+		return page_number;
+	}
+
 	uint64_t allocate_pages(uint64_t page_count, bool reserve) {
 		uint64_t page_number = find_contiguous_pages(page_count);
 		if (reserve)
 			reserve_pages(page_number, page_count);
 		else
 			lock_pages(page_number, page_count);
+		
+		VMM::set_page_translation(page_number, page_number, page_count);
 		
 		return page_number;
 	}

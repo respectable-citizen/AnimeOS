@@ -22,6 +22,7 @@ namespace PMM {
 	void free_pages(uint64_t, uint64_t);
 	void reserve_pages(uint64_t, uint64_t);
 	void unreserve_pages(uint64_t, uint64_t);
+	uint64_t allocate_pages_without_mapping(uint64_t, bool = false);
 	uint64_t allocate_pages(uint64_t, bool = false);
 	
 	uint64_t address_to_page_number(void*);

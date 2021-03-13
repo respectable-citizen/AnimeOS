@@ -1,5 +1,5 @@
-#ifndef IDT_H
-#define IDT_H
+#ifndef INTERRUPTS_H
+#define INTERRUPTS_H
 
 #include <stdint.h>
 
@@ -25,8 +25,10 @@ struct IDTR {
 	uint64_t address;
 } __attribute((packed));
 
-namespace IDT {
+namespace Interrupts {
 	IDTEntry* idt();
+	void enable();
+	void disable();
 	void set_idt_entry(uint8_t, uint64_t, uint16_t, uint8_t);
 	void initialise();
 }

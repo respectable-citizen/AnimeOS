@@ -19,7 +19,7 @@ namespace VMM {
 		current_paging_table = kernel_paging_table;
 		
 		//Identity map first 1MiB (it may be in use by firmware)
-		VMM::set_page_translation(0, 0, 256);
+		//VMM::set_page_translation(0, 0, 256);
 
 		//Identity map kernelspace
 		VMM::set_page_translation(kernel_page, kernel_page, kernel_size_pages);

@@ -8,15 +8,16 @@
 
 #include "gdt/gdt.hpp"
 
-#include "interrupts/idt.hpp"
+#include "interrupts/interrupts.hpp"
 
 #include "memory_manager/vmm.hpp"
 #include "memory_manager/pmm.hpp"
+#include "memory_manager/heap.hpp"
 
 #include "text_renderer/text_renderer.hpp"
 
 extern "C" void kernel_main() {
-	asm("cli"); //Disable interrupts until we can handle them
+	Interrupts::disable(); //Disable interrupts until we can handle them
 	
 	//Read kernel arguments out of RDI register and decompose the struct into individual variables
 	KernelArguments *kernel_arguments;
@@ -37,7 +38,7 @@ extern "C" void kernel_main() {
 	GDT::initialise();
 	
 	TextRenderer::draw_string((char* ) "Initialising IDT\r\n");
-	IDT::initialise();
+	Interrupts::initialise();
 	
 	TextRenderer::draw_string((char* ) "Initialising memory manager\r\n");
 
@@ -47,6 +48,12 @@ extern "C" void kernel_main() {
 	
 	PMM::initialise(memory_map, kernel_page, kernel_size_pages);
 	VMM::initialise(kernel_page, kernel_size_pages);
+	
+	Heap::initialise(16); //Let's start with 64KiB for kernel heap
+
+	Heap::malloc(10);
+
+	TextRenderer::draw_string((char* ) "it all worked");
 
 	hang();
 }

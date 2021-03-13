@@ -1,4 +1,4 @@
-#include "idt.hpp"
+#include "interrupts.hpp"
 
 #include "lib/memory.hpp"
 
@@ -6,13 +6,21 @@
 
 #include "isr.hpp"
 
-namespace IDT {
+namespace Interrupts {
 	namespace {
 		IDTEntry m_IDT[256] __attribute__((aligned (4096)));
 	}
 
 	IDTEntry* idt() {
 		return m_IDT;
+	}
+	
+	void enable() {
+		asm("sti");
+	}
+
+	void disable() {
+		asm("cli");
 	}
 
 	void set_idt_entry(uint8_t index, uint64_t isr_address, uint16_t selector, uint8_t gate_type) {
@@ -36,6 +44,6 @@ namespace IDT {
 
 		//Load IDT and re-enable interrupts because we can now handle them
 		asm("lidt %0" : : "m" (idtr));
-		asm("sti");
+		Interrupts::enable();
 	}
 }
