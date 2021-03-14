@@ -6,12 +6,17 @@
 #define TABLE_ENTRY_PRESENT 0b1
 #define TABLE_ENTRY_READWRITE 0b10
 
+enum PageSize {
+	FOUR_KIB = 4,
+	TWO_MIB = 3,
+	ONE_GIB = 2
+};
+
 namespace VMM {
 	void initialise(uint64_t, uint64_t);
-	void separate_table_indexes(uint64_t, uint16_t*, uint16_t*, uint16_t*, uint16_t*);
-	uint64_t create_table_entry(uint64_t, uint64_t);
-	void set_page_translation(uint64_t, uint64_t, uint64_t);
-	void recursively_set_table_translation(uint64_t*, uint64_t, uint64_t, uint8_t, uint64_t);
+	uint64_t create_table_entry(uint64_t, uint64_t, bool);
+	void set_translation(uint64_t, uint64_t, uint64_t, PageSize = FOUR_KIB);
+	void set_page_translation(uint64_t, uint64_t, uint64_t, uint8_t);
 };
 
 #endif

@@ -7,6 +7,11 @@ The bootloader is written in C, as it does not require more advanced features, w
 
 Not POSIX-compliant but many functions will be named accordingly (eg. memcpy).
 
+## Todo
+* Invalidate old translation when setting page translation
+* Map the PML4
+* Support custom sized pages
+
 ## Roadmap
 Done:
 * Text renderer

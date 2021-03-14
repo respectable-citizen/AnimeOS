@@ -1,8 +1,8 @@
 #include "isr.hpp"
 
-#include "../text_renderer/text_renderer.hpp"
+#include "text_renderer/text_renderer.hpp"
 
-#include "../utils.hpp"
+#include "utils.hpp"
 
 __attribute((interrupt)) void isr8(void *p) {
 	TextRenderer::kernel_panic((char*) "Double fault occurred.");

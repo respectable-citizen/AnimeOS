@@ -1,7 +1,7 @@
 #include "text_renderer.hpp"
 
 #include "font.hpp"
-#include "../utils.hpp"
+#include "utils.hpp"
 
 namespace TextRenderer {
 	namespace {

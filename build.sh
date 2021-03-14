@@ -24,7 +24,6 @@ clang -I efi -I common -I kernel -I kernel/text_renderer -I kernel/lib -I kernel
 				kernel/utils.cpp \
 				kernel/memory_manager/pmm.cpp \
 				kernel/memory_manager/vmm.cpp \
-				kernel/memory_manager/heap.cpp \
 				kernel/gdt/gdt.cpp \
 				kernel/gdt/gdt.s \
 				kernel/interrupts/interrupts.cpp \

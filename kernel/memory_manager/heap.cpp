@@ -1,8 +1,8 @@
 #include "heap.hpp"
 
-#include "../text_renderer/text_renderer.hpp"
+#include "text_renderer/text_renderer.hpp"
 
-#include "../lib/memory.hpp"
+#include "lib/memory.hpp"
 
 #include "pmm.hpp"
 

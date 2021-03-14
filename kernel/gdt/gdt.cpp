@@ -1,8 +1,8 @@
 #include "gdt.hpp"
 
-#include "../lib/memory.hpp"
+#include "lib/memory.hpp"
 
-#include "../text_renderer/text_renderer.hpp"
+#include "text_renderer/text_renderer.hpp"
 
 namespace GDT {
 	namespace {
