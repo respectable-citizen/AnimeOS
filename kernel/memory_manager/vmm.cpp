@@ -21,8 +21,6 @@ namespace VMM {
 		UNUSED(kernel_size_pages);
 		current_paging_table = kernel_paging_table;
 		
-		TextRenderer::draw_number((uint64_t) current_paging_table);
-
 		//Identity map first 1MiB (it may be in use by firmware)
 		//VMM::set_translation(0, 0, 256);
 		
@@ -53,7 +51,9 @@ namespace VMM {
 	
 			//We have reached the required table depth, time to create the actual table entry
 			if (i == (page_size - 1)) {
-				current_table[table_index] = (physical_page << 12) | flags;
+				uint64_t address = physical_page << 12;
+				asm volatile("invlpg (%0)" :: "r" (address) : "memory");
+				current_table[table_index] = address | flags;
 				break;
 			}
 
