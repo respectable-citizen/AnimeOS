@@ -9,6 +9,7 @@
 namespace PMM {
 	namespace {
 		uint8_t *m_page_map;
+		uint64_t m_page_map_size; //In pages
 
 		//These fields are purely informational, they are kept up to date by the corresponding functions
 		uint64_t m_total_pages; //This is NOT representational of the amount of installed RAM, it is simply the number of pages reported by the memory map (which may have inconsistencies)
@@ -28,12 +29,12 @@ namespace PMM {
 		m_total_pages = (descriptor->PhysicalStart / 4096) + descriptor->NumberOfPages;
 		
 		//Find a block of pages large enough to store our page map
-		uint64_t required_pages_for_page_map = (m_total_pages / 4096) + 1;
+		m_page_map_size = (m_total_pages / 4096) + 1;
 		bool allocated_page_map = false;
 		for (uint32_t i = 0; i < descriptor_count; i++) {
 			EFI_MEMORY_DESCRIPTOR *descriptor = get_memory_descriptor(memory_map, i);
 			
-			if (descriptor->Type == EfiConventionalMemory && descriptor->NumberOfPages >= required_pages_for_page_map) {
+			if (descriptor->Type == EfiConventionalMemory && descriptor->NumberOfPages >= m_page_map_size) {
 				m_page_map = (uint8_t*) descriptor->PhysicalStart;
 				allocated_page_map = true;
 				break;
@@ -61,7 +62,7 @@ namespace PMM {
 		}
 
 		//Mark page map as reserved memory
-		lock_pages(address_to_page_number(m_page_map), required_pages_for_page_map);
+		lock_pages(address_to_page_number(m_page_map), m_page_map_size);
 
 		//Mark kernelspace as reserved memory
 		lock_pages(kernel_page, kernel_size_pages);
@@ -91,24 +92,47 @@ namespace PMM {
 		m_free_pages += set_page_status(page_start, page_count, PAGE_FREE);
 	}
 
-	void* allocate_pages(uint64_t page_count, PageSize page_size) {
-		UNUSED(page_size);
+	void* allocate_pages(uint64_t page_count, bool kernelspace, PageSize page_size, bool map) {
 		uint64_t contiguous_pages = 0;
 		uint64_t contiguous_pages_start = 0;
-		for (uint64_t i = 0; i < m_total_pages; i++) {
+
+		//Choose which address space to search for available pages
+		uint64_t start_page = 0;
+		uint64_t end_page = KERNEL_MEMORY_PAGES;
+
+		if (!kernelspace) {
+			start_page = KERNEL_MEMORY_PAGES;
+			end_page = m_total_pages;
+		}
+
+		for (uint64_t i = start_page; i < end_page; i++) {
 			uint8_t page = get_page(i);
 			if (page == PAGE_FREE) {
 				if (contiguous_pages == 0) contiguous_pages_start = i;
 				contiguous_pages++;
 				if (contiguous_pages == page_count) {
 					lock_pages(contiguous_pages_start, page_count);
-					//VMM::set_translation(contiguous_pages_start, contiguous_pages_start, page_count, page_size);
+					if (map) VMM::set_translation(contiguous_pages_start, contiguous_pages_start, page_count, page_size);
+
 					return page_number_to_address(contiguous_pages_start);
 				}
 			}
 		}
-		TextRenderer::kernel_panic((char*) "Could not find enough contiguous pages to allocate memory.");
+
+		if (kernelspace) {
+			TextRenderer::kernel_panic((char*) "Could not find enough contiguous pages in kernelspace to allocate memory.");
+		} else {
+			TextRenderer::kernel_panic((char*) "Could not find enough contiguous pages in userspace to allocate memory.");
+		}
 		return nullptr;
+	}
+
+	void* allocate_kernel_pages(uint64_t page_count, PageSize page_size) {
+		return allocate_pages(page_count, true, page_size, false);
+	}
+
+	void* allocate_user_pages(uint64_t page_count, PageSize page_size) {
+		return allocate_pages(page_count, false, page_size, true);
 	}
 
 	uint64_t address_to_page_number(void* address) {
@@ -117,5 +141,13 @@ namespace PMM {
 	
 	void* page_number_to_address(uint64_t page_number) {
 		return (void*) (page_number * 4096);
+	}
+
+	void* page_map() {
+		return m_page_map;
+	}
+
+	uint64_t page_map_size() {
+		return m_page_map_size;
 	}
 }

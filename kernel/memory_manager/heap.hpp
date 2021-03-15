@@ -7,6 +7,7 @@ namespace Heap {
 	void initialise(uint64_t);
 	void defragment();
 	void* malloc(uint64_t);
+	void free(void*);
 };
 
 #endif

@@ -12,7 +12,7 @@
 
 #include "memory_manager/pmm.hpp"
 #include "memory_manager/vmm.hpp"
-//#include "memory_manager/heap.hpp"
+#include "memory_manager/heap.hpp"
 
 #include "text_renderer/text_renderer.hpp"
 
@@ -48,9 +48,8 @@ extern "C" void kernel_main() {
 
 	PMM::initialise(memory_map, kernel_page, kernel_size_pages);
 	VMM::initialise(kernel_page, kernel_size_pages);
-	//Heap::initialise(16); //Let's start with 64KiB for kernel heap
-
-	//Heap::malloc(10);
+	Heap::initialise(16); //Let's start with 64KiB for kernel heap
+	for (;;) Heap::malloc(10);
 
 	TextRenderer::draw_string((char* ) "it all worked");
 

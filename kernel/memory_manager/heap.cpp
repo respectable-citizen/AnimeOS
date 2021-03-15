@@ -6,6 +6,7 @@
 
 #include "pmm.hpp"
 
+//TODO: This entire implementation is slow and incomplete, definitely need to work on this.
 namespace Heap {
 	namespace {
 		uint8_t *heap_start;
@@ -17,7 +18,7 @@ namespace Heap {
 	}
 	
 	void initialise(uint64_t page_count) {
-		heap_start = (uint8_t*) PMM::page_number_to_address(PMM::allocate_pages(page_count));
+		heap_start = (uint8_t*) PMM::allocate_kernel_pages(page_count);
 		heap_end = (uint8_t*) (((uint64_t) heap_start) + (page_count * 4096));
 		heap_current = heap_start;
 
@@ -25,7 +26,9 @@ namespace Heap {
 		free_bytes = total_bytes;
 	}
 	
-	void defragment() {}
+	void defragment() {
+		TextRenderer::kernel_panic((char*) "defragmenting\r\n");
+	}
 
 	void* malloc(uint64_t bytes) {
 		uint64_t required_bytes = bytes + 8; //We actually need eight extra bytes to store the size
@@ -42,7 +45,16 @@ namespace Heap {
 			*((uint64_t*) heap_current) = bytes;
 			uint8_t *allocated_memory = heap_current + 8;
 			heap_current = (uint8_t*) ((uint64_t) heap_current + required_bytes);
+			free_bytes -= required_bytes;
 			return (void*) allocated_memory;
 		}
+	}
+
+	void free(void *p) {
+		uint8_t *entry = (uint8_t*) p;
+		entry -= 8;
+		uint64_t size = *((uint64_t*) entry);
+	
+		memset(entry, 0, size + 8);
 	}
 }

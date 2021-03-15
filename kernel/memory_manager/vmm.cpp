@@ -14,24 +14,29 @@ namespace VMM {
 	}
 	
 	void initialise(uint64_t kernel_page, uint64_t kernel_size_pages) {
+		//Check if kernel is compatible with our memory layout
+		if ((kernel_page + kernel_size_pages) >= KERNEL_MEMORY_PAGES) {
+			//TODO: This doesn't update when you change the KERNEL_MEMORY_PAGES definition
+			TextRenderer::kernel_panic((char*) "Kernel must end before 2GiB in memory.");
+		}
+
 		//Setup kernel page table
-		kernel_paging_table = (uint64_t*) PMM::allocate_pages(1);
+		kernel_paging_table = (uint64_t*) PMM::allocate_kernel_pages(1);
 		memset((void*) kernel_paging_table, 0, 4096);
-		UNUSED(kernel_page);
-		UNUSED(kernel_size_pages);
 		current_paging_table = kernel_paging_table;
 		
-		//Identity map first 1MiB (it may be in use by firmware)
-		//VMM::set_translation(0, 0, 256);
+		//Identity map required amount of pages for kernel
+		VMM::set_translation(0, 0, KERNEL_MEMORY_PAGES);
 		
-		//Identity map kernelspace
-		VMM::set_translation(kernel_page, kernel_page, kernel_size_pages);
-
-		//Also identity map the framebuffer
+		//Identity map the framebuffer
 		uint64_t framebuffer_page = PMM::address_to_page_number(TextRenderer::graphics_info().address);
 		uint64_t framebuffer_page_count = (TextRenderer::graphics_info().buffer_size / 4096) + 1;
 		VMM::set_translation(framebuffer_page, framebuffer_page, framebuffer_page_count);
 		
+		//Identity map the PMM page map
+		//uint64_t page_map = PMM::address_to_page_number(PMM::page_map());
+		//VMM::set_translation(page_map, page_map, PMM::page_map_size());
+
 		asm("mov %0, %%cr3" : : "r" (current_paging_table)); //Now that we have setup the kernel VAS, we can safely enable paging without messing anything up
 	}
 
@@ -62,7 +67,7 @@ namespace VMM {
 				subtable_address = (void*) (((current_table[table_index]) >> 12) << 12); //We do this bitshifting to clear the flags and get just the address
 			} else {
 				//Table doesn't yet exist, allocate it
-				void *sub_table = PMM::allocate_pages(1);
+				void *sub_table = PMM::allocate_kernel_pages(1);
 				memset(sub_table, 0, 4096);
 				current_table[table_index] = (uint64_t) sub_table | flags;
 				subtable_address = (uint64_t*) sub_table;
