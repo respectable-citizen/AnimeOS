@@ -39,7 +39,7 @@ extern "C" void kernel_main() {
 	
 	TextRenderer::draw_string((char* ) "Initialising IDT\r\n");
 	Interrupts::initialise();
-	
+
 	TextRenderer::draw_string((char* ) "Initialising memory manager\r\n");
 
 	uint64_t kernel_page = PMM::address_to_page_number((void*) kernel_start);
@@ -48,8 +48,14 @@ extern "C" void kernel_main() {
 
 	PMM::initialise(memory_map, kernel_page, kernel_size_pages);
 	VMM::initialise(kernel_page, kernel_size_pages);
-	Heap::initialise(16); //Let's start with 64KiB for kernel heap
-	for (;;) Heap::malloc(10);
+	
+	asm("int $0x0e");
+	hang();
+
+
+
+	//Heap::initialise(16); //Let's start with 64KiB for kernel heap
+	//for (;;) Heap::malloc(10);
 
 	TextRenderer::draw_string((char* ) "it all worked");
 

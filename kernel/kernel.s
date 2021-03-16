@@ -5,6 +5,7 @@
 
 entry_point:
 	mov $stack_top, %rsp
+	movq $0, %rbp
 	jmp kernel_main
 
 .section .bss

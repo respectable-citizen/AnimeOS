@@ -12,5 +12,6 @@ struct InterruptFrame {
 
 __attribute((interrupt)) void isr8(void*);
 __attribute((interrupt)) void isr14(void*);
+__attribute((interrupt)) void isr128(void*);
 
 #endif

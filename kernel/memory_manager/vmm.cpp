@@ -16,7 +16,6 @@ namespace VMM {
 	void initialise(uint64_t kernel_page, uint64_t kernel_size_pages) {
 		//Check if kernel is compatible with our memory layout
 		if ((kernel_page + kernel_size_pages) >= KERNEL_MEMORY_PAGES) {
-			//TODO: This doesn't update when you change the KERNEL_MEMORY_PAGES definition
 			TextRenderer::kernel_panic((char*) "Kernel must end before 2GiB in memory.");
 		}
 
@@ -30,8 +29,7 @@ namespace VMM {
 		
 		//Identity map the framebuffer
 		uint64_t framebuffer_page = PMM::address_to_page_number(TextRenderer::graphics_info().address);
-		uint64_t framebuffer_page_count = (TextRenderer::graphics_info().buffer_size / 4096) + 1;
-		VMM::set_translation(framebuffer_page, framebuffer_page, framebuffer_page_count);
+		VMM::set_translation(framebuffer_page, framebuffer_page, PMM::bytes_to_pages(TextRenderer::graphics_info().buffer_size));
 		
 		//Identity map the PMM page map
 		//uint64_t page_map = PMM::address_to_page_number(PMM::page_map());

@@ -37,6 +37,7 @@ namespace Interrupts {
 
 		set_idt_entry(8, (uint64_t) &isr8, 0x8, GATE_TYPE_TRAP); //Double fault handler
 		set_idt_entry(14, (uint64_t) &isr14, 0x8, GATE_TYPE_TRAP); //Page fault handler
+		set_idt_entry(0x80, (uint64_t) &isr128, 0x8, GATE_TYPE_TRAP); //SYSCALL handler
 
 		IDTR idtr;
 		idtr.size = sizeof(m_IDT) - 1;

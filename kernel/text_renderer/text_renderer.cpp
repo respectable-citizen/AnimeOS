@@ -115,12 +115,85 @@ namespace TextRenderer {
 	}
 	
 	void kernel_panic(char *error) {
+		//Draw background
+		for (uint64_t x = 0; x < m_graphics_info.width; x++) {
+			for (uint64_t y = 0; y < m_graphics_info.height; y++) {
+				uint8_t r = (x * 2) % 64;
+				uint8_t g = (y * 2) % 64;
+				uint8_t b = ((x + y) * 2) % 64;
+				m_graphics_info.address[x + (y * m_graphics_info.width)] = (r << 16) | (g << 8) | b;
+			}
+		}
+
+		uint64_t rax;
+		uint64_t rbx;
+		uint64_t rcx;
+		uint64_t rdx;
+		uint64_t rbp;
+		uint64_t rsp;
+		uint64_t rsi;
+		uint64_t rdi;
+
+		asm volatile ("mov %%rax, %0": "=g"(rax)::"memory");
+		asm volatile ("mov %%rbx, %0": "=g"(rbx)::"memory");
+		asm volatile ("mov %%rcx, %0": "=g"(rcx)::"memory");
+		asm volatile ("mov %%rdx, %0": "=g"(rdx)::"memory");
+		asm volatile ("mov %%rbp, %0": "=g"(rbp)::"memory");
+		asm volatile ("mov %%rsp, %0": "=g"(rsp)::"memory");
+		asm volatile ("mov %%rsi, %0": "=g"(rsi)::"memory");
+		asm volatile ("mov %%rdi, %0": "=g"(rdi)::"memory");
+		
+		//Draw kernel panic
 		reset_cursor();
-		set_color(0xff0000);
-		fill_screen();
-		set_color(0x000000);
+		set_color(0xffffff);
 		draw_string((char*) "KERNEL PANIC\r\n\r\nError: ");
 		draw_string(error);
+
+		//Draw registers
+		draw_string((char*) "\r\n\r\nRAX: ");
+		draw_number(rax);
+
+		draw_string((char*) "\r\nRBX: ");
+		draw_number(rbx);
+
+		draw_string((char*) "\r\nRCX: ");
+		draw_number(rcx);
+
+		draw_string((char*) "\r\nRDX: ");
+		draw_number(rdx);
+
+		draw_string((char*) "\r\nRBP: ");
+		draw_number(rbp);
+
+		draw_string((char*) "\r\nRSP: ");
+		draw_number(rsp);
+
+		draw_string((char*) "\r\nRSI: ");
+		draw_number(rsi);
+
+		draw_string((char*) "\r\nRDI: ");
+		draw_number(rdi);
+
+		/*
+		struct stackframe {
+			struct stackframe* rbp;
+			uint64_t rip;
+		};
+
+		uint64_t max_frames = 5;
+		stackframe *frame = (stackframe*) rbp;
+		draw_string((char*) "\r\nstack trace:\r\n");
+		draw_string((char*) "rip: \r\n");
+		draw_number((uint64_t) &max_frames);
+		draw_string((char*) "\r\n");
+		for (uint64_t frame_count = 0; frame && frame_count < max_frames; frame_count++) {
+			draw_string((char*) "rip: \r\n");
+			draw_number(frame->rip);
+			draw_string((char*) "\r\n");
+			//if (stk->rbp == 0) break;
+			frame = frame->rbp;
+		}*/
+
 		hang();
 	}
 

@@ -20,8 +20,6 @@ namespace PMM {
 		}
 	}
 	
-	//TODO: Handle memory map being out of order
-	//TODO: Handle overlapping descriptors
 	void initialise(MemoryMap memory_map, uint64_t kernel_page, uint64_t kernel_size_pages) {
 		//Determine number of pages
 		uint32_t descriptor_count = memory_map.memory_map_size / memory_map.descriptor_size;
@@ -29,7 +27,7 @@ namespace PMM {
 		m_total_pages = (descriptor->PhysicalStart / 4096) + descriptor->NumberOfPages;
 		
 		//Find a block of pages large enough to store our page map
-		m_page_map_size = (m_total_pages / 4096) + 1;
+		m_page_map_size = bytes_to_pages(m_total_pages);
 		bool allocated_page_map = false;
 		for (uint32_t i = 0; i < descriptor_count; i++) {
 			EFI_MEMORY_DESCRIPTOR *descriptor = get_memory_descriptor(memory_map, i);
@@ -141,6 +139,10 @@ namespace PMM {
 	
 	void* page_number_to_address(uint64_t page_number) {
 		return (void*) (page_number * 4096);
+	}
+
+	uint64_t bytes_to_pages(uint64_t bytes) {
+		return (bytes / 4096) + 1;
 	}
 
 	void* page_map() {

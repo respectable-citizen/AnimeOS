@@ -13,3 +13,8 @@ __attribute((interrupt)) void isr14(void *p) {
 	TextRenderer::kernel_panic((char*) "Page fault occurred.");
 	UNUSED(p);
 }
+
+__attribute((interrupt)) void isr128(void *p) {
+	TextRenderer::kernel_panic((char*) "SYSCALL interrupt.");
+	UNUSED(p);
+}

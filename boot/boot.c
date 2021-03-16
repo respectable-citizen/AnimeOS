@@ -61,7 +61,6 @@ void output_error() {
 }
 
 void output_number(uint64_t i) {
-	//FIXME: This function is kinda garbage (it literally outputs the number in reverse order)
 	if (i == 0) {
 		ST->ConOut->OutputString(ST->ConOut, L"0");
 		return;
@@ -147,8 +146,6 @@ KernelEntryPoint load_kernel(uint64_t *kernel_start, uint64_t *kernel_end) {
 	}
 	error_check(L"Open kernel_file");
 
-
-	//TODO: This may cause a buffer size error
 	EFI_FILE_INFO *file_info;
 	EFI_GUID fi_guid = EFI_FILE_INFO_ID;
 	UINTN buffer_size = 256;
@@ -172,7 +169,7 @@ KernelEntryPoint load_kernel(uint64_t *kernel_start, uint64_t *kernel_end) {
 	error_check(L"Read kernel_file");
 	
 	//Parse kernel file (ELF format)
-	//NOTE: This is a 64 bit header, it will not corrctly parse 32 bit ELF executable
+	//NOTE: This is a 64 bit header, it will not correctly parse 32 bit ELF executable
  	ElfHeader *elf_header = (ElfHeader*) kernel_buffer;
 	char *magic = elf_header->magic;
 	if (magic[0] != 0x7f || magic[1] != 'E' || magic[2] != 'L' || magic[3] != 'F') {
@@ -255,9 +252,7 @@ void* memcpy(void *destination, void *source, uint64_t size) {
 	return destination;
 }
 
-//TODO: Write your own UEFI call wrapper which integrates error checking
 EFI_STATUS efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *systab) {
-	//TODO: Investigate the InitializeLib function and see if it is necessary (our current EFI headers don't support it)
 	//InitializeLib(IH, systab);
 	ST = systab;
 	BS = ST->BootServices;
@@ -291,7 +286,6 @@ EFI_STATUS efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *systab) {
 	kernel_arguments.kernel_start = kernel_start;
 	kernel_arguments.kernel_end = kernel_end;
 
-	//TODO: We are literally inventing our own calling convention at this point, find a better way to do this
 	asm("mov %0, %%rdi" : : "g" (&kernel_arguments));
 
 	entry_point();

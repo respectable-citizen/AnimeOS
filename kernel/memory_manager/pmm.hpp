@@ -21,6 +21,7 @@ namespace PMM {
 
 	uint64_t address_to_page_number(void*);
 	void* page_number_to_address(uint64_t);
+	uint64_t bytes_to_pages(uint64_t);
 
 	void* page_map();
 	uint64_t page_map_size();

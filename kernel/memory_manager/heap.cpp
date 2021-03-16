@@ -6,7 +6,6 @@
 
 #include "pmm.hpp"
 
-//TODO: This entire implementation is slow and incomplete, definitely need to work on this.
 namespace Heap {
 	namespace {
 		uint8_t *heap_start;
@@ -33,7 +32,6 @@ namespace Heap {
 	void* malloc(uint64_t bytes) {
 		uint64_t required_bytes = bytes + 8; //We actually need eight extra bytes to store the size
 		if (free_bytes < required_bytes) {
-			//TODO: This should expand the heap, but we currently have no support for that so we instead kernel panic
 			TextRenderer::kernel_panic((char*) "Ran out of memory for kernel heap.");
 			return nullptr;
 		} else {
