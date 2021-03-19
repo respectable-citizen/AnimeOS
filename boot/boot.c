@@ -148,13 +148,34 @@ KernelEntryPoint load_kernel(uint64_t *kernel_start, uint64_t *kernel_end) {
 
 	EFI_FILE_INFO *file_info;
 	EFI_GUID fi_guid = EFI_FILE_INFO_ID;
-	UINTN buffer_size = 256;
 
-	status = BS->AllocatePool(EfiBootServicesData, buffer_size, (void**) &file_info);
-	error_check(L"AllocatePool file_info");
+	//Keep allocating a bigger buffer until we succeed in getting the file info (8 tries)
+	//We do this because we are not provided a method to find out how big of a buffer we need
+	int allocated_buffer = 0;
+	uint64_t buffer_size = 256;
+	for (int i = 0; i < 8; i++) {
+		status = BS->AllocatePool(EfiBootServicesData, buffer_size, (void**) &file_info);
+		error_check(L"AllocatePool file_info");
+
+		status = kernel_file->GetInfo(kernel_file, &fi_guid, &buffer_size, file_info);
 	
-	status = kernel_file->GetInfo(kernel_file, &fi_guid, &buffer_size, file_info);
-	error_check(L"GetInfo kernel_file");
+		if (status == EFI_SUCCESS) {
+			allocated_buffer = 1;
+			break;
+		}
+		if (status != EFI_BUFFER_TOO_SMALL) error_check(L"GetInfo file_info");
+
+		//Buffer wasn't big enough, double the size and reallocate it
+		buffer_size *= 2;
+
+		status = BS->FreePool((void*) file_info);
+		error_check(L"LoopFreePool file_info");
+	}
+
+	if (!allocated_buffer) {
+		ST->ConOut->OutputString(ST->ConOut, L"Failed to allocate file_info buffer");
+		hang();
+	}
 	
 	UINTN file_size = file_info->FileSize;
 	status = BS->FreePool(file_info);
