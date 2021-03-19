@@ -52,7 +52,8 @@ CHAR16* EFI_ERRORS[] = {
 typedef void(*KernelEntryPoint)(); 
 
 void hang() {
-		for (;;);
+	asm("cli");
+	for (;;) asm("hlt");
 }
 
 void output_error() {
