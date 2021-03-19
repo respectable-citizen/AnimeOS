@@ -61,22 +61,28 @@ void output_error() {
 		hang();
 }
 
-void output_number(uint64_t i) {
-	if (i == 0) {
+void output_number(uint64_t number) {
+	if (number == 0) {
 		ST->ConOut->OutputString(ST->ConOut, L"0");
 		return;
 	}
-	char const digit[] = "0123456789";
-	char text_digit[4];
-	while (i != 0) {
-		int current_digit = (i % 10);
-		text_digit[0] = digit[current_digit];
-		text_digit[1] = '\0';
-		text_digit[2] = '\0';
-		text_digit[3] = '\0';
-		ST->ConOut->OutputString(ST->ConOut, (CHAR16*) text_digit);
-		i /= 10;
+
+  char chars[60];
+	chars[58] = '\0';
+	chars[59] = '\0';
+
+	int i = 56;
+	for (;;) {
+		int digit = number % 10;
+		chars[i] = '0' + digit;
+		chars[i + 1] = '\0';
+		i -= 2;
+
+		number /= 10;
+		if (number == 0) break;
 	}
+
+	ST->ConOut->OutputString(ST->ConOut, (CHAR16*) (chars + i + 2));
 }
 
 void error_check(CHAR16 *name) {
