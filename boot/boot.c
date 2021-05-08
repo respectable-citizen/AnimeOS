@@ -290,6 +290,7 @@ GraphicsInfo initialize_graphics() {
 	graphics_info.width = gop->Mode->Info->HorizontalResolution;
 	graphics_info.height = gop->Mode->Info->VerticalResolution;
 	graphics_info.pixels_per_scanline = gop->Mode->Info->PixelsPerScanLine;
+	
 	return graphics_info;
 }
 
@@ -318,12 +319,6 @@ EFI_STATUS efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *systab) {
 	uint64_t kernel_end;
 	KernelEntryPoint entry_point = load_kernel(&kernel_start, &kernel_end);
 	GraphicsInfo graphics_info = initialize_graphics();
-	if (graphics_info.width != graphics_info.pixels_per_scanline) {
-		//I don't understand the different between these 2 metrics and I believe they will always be the same. Just in case they aren't, fail loudly.
-		ST->ConOut->OutputString(ST->ConOut, L"Mismatch between width and pixels per scanline.");
-		hang();
-	}
-	
 	MemoryMap memory_map = get_memory_map(); //This should be done last as many UEFI calls will invalidate the map
 	status = BS->ExitBootServices(IH, memory_map.map_key);
 	error_check(L"ExitBootServices");

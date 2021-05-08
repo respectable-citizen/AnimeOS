@@ -52,7 +52,7 @@ namespace TextRenderer {
 	}
 	
 	void draw_pixel(uint32_t x, uint32_t y) {
-		m_graphics_info.address[y * m_graphics_info.width + x] = color();
+		m_graphics_info.address[y * m_graphics_info.pixels_per_scanline + x] = color();
 	}
 	
 	void draw_character(uint8_t c) {
@@ -115,7 +115,7 @@ namespace TextRenderer {
 				uint8_t r = (x * 2) % 64;
 				uint8_t g = (y * 2) % 64;
 				uint8_t b = ((x + y) * 2) % 64;
-				m_graphics_info.address[x + (y * m_graphics_info.width)] = (r << 16) | (g << 8) | b;
+				m_graphics_info.address[x + (y * m_graphics_info.pixels_per_scanline)] = (r << 16) | (g << 8) | b;
 			}
 		}
 
