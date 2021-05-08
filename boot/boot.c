@@ -264,6 +264,26 @@ GraphicsInfo initialize_graphics() {
 	status = BS->LocateProtocol(&gop_guid, 0, (void**) &gop);
 	error_check(L"LocateProtocol gop");
 
+	//Find and set graphics mode to highest reoslution
+	EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *mode_info;
+	uint64_t info_size;
+
+	uint32_t highest_mode;
+	uint32_t highest_resolution = 0;
+	for (uint32_t i = 0; i < gop->Mode->MaxMode; i++) {
+		status = gop->QueryMode(gop, i, &info_size, &mode_info);
+		error_check(L"QueryMode");
+
+		uint32_t total_pixels = mode_info->HorizontalResolution * mode_info->VerticalResolution;
+		if (total_pixels >= highest_resolution) {
+			highest_resolution = total_pixels;
+			highest_mode = i;
+		}
+	}
+
+	status = gop->SetMode(gop, highest_mode);
+	error_check(L"SetMode");
+
 	GraphicsInfo graphics_info;
 	graphics_info.address = (void*) gop->Mode->FrameBufferBase;
 	graphics_info.buffer_size = gop->Mode->FrameBufferSize;
@@ -297,7 +317,6 @@ EFI_STATUS efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *systab) {
 	uint64_t kernel_start;
 	uint64_t kernel_end;
 	KernelEntryPoint entry_point = load_kernel(&kernel_start, &kernel_end);
-	MemoryMap memory_map = get_memory_map();
 	GraphicsInfo graphics_info = initialize_graphics();
 	if (graphics_info.width != graphics_info.pixels_per_scanline) {
 		//I don't understand the different between these 2 metrics and I believe they will always be the same. Just in case they aren't, fail loudly.
@@ -305,6 +324,7 @@ EFI_STATUS efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *systab) {
 		hang();
 	}
 	
+	MemoryMap memory_map = get_memory_map(); //This should be done last as many UEFI calls will invalidate the map
 	status = BS->ExitBootServices(IH, memory_map.map_key);
 	error_check(L"ExitBootServices");
 
