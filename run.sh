@@ -19,4 +19,4 @@ qemu-system-x86_64 \
 				-net none \
 				-m 10G \
 				--no-shutdown --no-reboot \
-				-drive file=fat:rw:fs #-drive format=raw,file=disk.img
+				-drive file=fat:rw:fs,format=raw #-drive format=raw,file=disk.img
