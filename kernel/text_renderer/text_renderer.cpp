@@ -55,26 +55,20 @@ namespace TextRenderer {
 		m_graphics_info.address[y * m_graphics_info.width + x] = color();
 	}
 	
-	void draw_character(char c) {
-		int char_index;
-		if (c >= ' ' && c <= '~') {
-			char_index = c - ' ';
-		} else {
-			return;
-		}
-	
+	void draw_character(uint8_t c) {
+		if (c < 32 || c > 126) return; //Don't try print the character if it's outside of the printable range
+
 		for (int x = 0; x < 8; x++) {
 			for (int y = 0; y < 8; y++) {
-				int array_index = (char_index * 8) + y;
-				int bit_index = 8 - x;
-				if (((font[array_index] >> bit_index) & 1) == 1) {
+				bool pixel_bit = (font[c][y] >> x) & 1;
+				if (pixel_bit) {
 					uint32_t cursor_x_offset = m_cursor_x * 7;
 					uint32_t cursor_y_offset = m_cursor_y * 10 + 1;
 					draw_pixel(x + cursor_x_offset, y + cursor_y_offset);
 				}
 			}
 		}
-	
+		
 		set_cursor_x(m_cursor_x + 1);
 	}
 	

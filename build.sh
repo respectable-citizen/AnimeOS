@@ -18,7 +18,6 @@ clang -I efi -I common -I kernel -I kernel/text_renderer -I kernel/lib -I kernel
 				kernel/kernel.s \
 				kernel/kernel.cpp \
 				kernel/text_renderer/text_renderer.cpp \
-				kernel/text_renderer/font.cpp \
 				kernel/lib/memory.cpp \
 				kernel/lib/math.cpp \
 				kernel/utils.cpp \

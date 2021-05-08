@@ -16,7 +16,7 @@ namespace TextRenderer {
 	void set_color(uint32_t);
 	uint32_t color();
 	void draw_pixel(uint32_t, uint32_t);
-	void draw_character(char);
+	void draw_character(uint8_t);
 	void draw_string(char*);
 	void draw_number(uint64_t);
 	void fill_screen();
