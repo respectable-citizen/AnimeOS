@@ -18,6 +18,13 @@
 
 #include "text_renderer/text_renderer.hpp"
 
+typedef void (*constructor)();
+extern "C" constructor start_ctors;
+extern "C" constructor end_ctors;
+extern "C" void call_global_constructors() {
+	for (constructor* i = &start_ctors; i != &end_ctors; i++) (*i)();
+}
+
 extern "C" void kernel_main() {
 	Interrupts::disable(); //Disable interrupts until we can handle them
 	
@@ -36,6 +43,7 @@ extern "C" void kernel_main() {
 	TextRenderer::draw_string((char*) "AnimeOS booting\r\n\r\n");
 	TextRenderer::set_color(0xffffff);
 		
+	//handle_constructors();
 	TextRenderer::draw_string((char*) "Initialising GDT\r\n");
 	GDT::initialise();
 	
@@ -50,8 +58,11 @@ extern "C" void kernel_main() {
 
 	PMM::initialise(memory_map, kernel_page, kernel_size_pages);
 	VMM::initialise(kernel_page, kernel_size_pages);
-	Block32::initialise();	
-	//Heap::initialise();
+
+	call_global_constructors(); //This would usually be done before the kernel main function is even called, but some of our global constructors rely on the memory manager and such we have to wait until they are initialised before we call the global constructors	
+	
+	Block32::initialise();
+	Heap::initialise();
 	
 	TextRenderer::draw_string((char*) "\r\nit all worked");
 
