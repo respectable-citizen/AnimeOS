@@ -1,5 +1,6 @@
 #pragma once
 
+#include "memory.hpp"
 #include "../memory_manager/pmm.hpp"
 #include "../text_renderer/text_renderer.hpp"
 
@@ -15,12 +16,13 @@ public:
 		current_item_capacity = 64;
 		current_size = 0;
 		items = (T*) PMM::allocate_kernel_pages(PMM::bytes_to_pages(current_item_capacity * sizeof(T)));
+		TextRenderer::draw_string((char*) "constructor\r\n");
 	}
 
 	void push(T item) {
 		if (current_size >= current_item_capacity) {
 			TextRenderer::draw_string((char*) "expanding capacity from ");
-			TextRenderer::draw_number(current_size);
+			TextRenderer::draw_number(current_item_capacity);
 			TextRenderer::draw_string((char*) " to ");
 
 			uint64_t size_bytes = current_size * sizeof(T);
