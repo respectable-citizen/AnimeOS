@@ -67,8 +67,8 @@ namespace TextRenderer {
 	void draw_character(uint8_t c) {
 		if (c < 32 || c > 126) return; //Don't try print the character if it's outside of the printable range
 
-		for (int x = 0; x < 8; x++) {
-			for (int y = 0; y < 8; y++) {
+		for (int y = 0; y < 8; y++) {
+			for (int x = 0; x < 8; x++) {
 				bool pixel_bit = (font[c][y] >> x) & 1;
 				if (pixel_bit) {
 					uint32_t cursor_x_offset = m_cursor_x * 7;
@@ -110,8 +110,8 @@ namespace TextRenderer {
 	}
 	
 	void fill_screen() {
-		for (uint32_t x = 0; x < m_graphics_info.width; x++) {
-			for (uint32_t y = 0; y < m_graphics_info.height; y++) {
+		for (uint32_t y = 0; y < m_graphics_info.height; y++) {
+			for (uint32_t x = 0; x < m_graphics_info.width; x++) {
 				draw_pixel(x, y);
 			}
 		}				
@@ -119,8 +119,8 @@ namespace TextRenderer {
 	
 	void kernel_panic(char *error) {
 		//Draw background
-		for (uint64_t x = 0; x < m_graphics_info.width; x++) {
-			for (uint64_t y = 0; y < m_graphics_info.height; y++) {
+		for (uint64_t y = 0; y < m_graphics_info.height; y++) {
+			for (uint64_t x = 0; x < m_graphics_info.width; x++) {
 				uint8_t r = (x * 2) % 64;
 				uint8_t g = (y * 2) % 64;
 				uint8_t b = ((x + y) * 2) % 64;

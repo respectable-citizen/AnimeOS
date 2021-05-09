@@ -49,8 +49,8 @@ extern "C" void kernel_main() {
 	PMM::initialise(memory_map, kernel_page, kernel_size_pages);
 	VMM::initialise(kernel_page, kernel_size_pages);
 	
-	//Heap::initialise(16); //Let's start with 64KiB for kernel heap
-	//for (;;) Heap::malloc(10);
+	Heap::initialise(16); //Let's start with 64KiB for kernel heap
+	for (;;) Heap::malloc(10);
 
 	TextRenderer::draw_string((char* ) "it all worked");
 
