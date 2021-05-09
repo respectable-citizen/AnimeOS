@@ -133,18 +133,6 @@ namespace PMM {
 		return allocate_pages(page_count, false, page_size, true);
 	}
 
-	uint64_t address_to_page_number(void* address) {
-		return (uint64_t) address / 4096;
-	}
-	
-	void* page_number_to_address(uint64_t page_number) {
-		return (void*) (page_number * 4096);
-	}
-
-	uint64_t bytes_to_pages(uint64_t bytes) {
-		return (bytes / 4096) + 1;
-	}
-
 	void* page_map() {
 		return m_page_map;
 	}

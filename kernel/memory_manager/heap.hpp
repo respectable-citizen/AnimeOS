@@ -1,13 +1,9 @@
-#ifndef HEAP_H
-#define HEAP_H
+#pragma once
 
 #include <stdint.h>
 
 namespace Heap {
-	void initialise(uint64_t);
-	void defragment();
+	void initialise();
 	void* malloc(uint64_t);
 	void free(void*);
 };
-
-#endif
