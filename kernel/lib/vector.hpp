@@ -53,9 +53,21 @@ public:
 		current_size--;
 	}
 
-	T get(uint64_t i) {
+	void insert(uint64_t index, uint64_t value) {
+		//This is all a pretty hacky way of making the list expand if necessary, any better way to do this?
+		T last_element = items[current_size - 1];
+		memmove((void*) (items + index + 1), (void*) (items + index), (current_size - index) * sizeof(T));
+		items[index] = value;
+		push(last_element);
+	}
+
+	T* get(uint64_t i) {
 		if (i >= current_size) TextRenderer::kernel_panic((char*) "Out of bounds access in vector");
-		return items[i];
+		return &items[i];
+	}
+
+	T operator[](uint64_t i) {
+		return *get(i);
 	}
 
 	uint64_t size() {
