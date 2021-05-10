@@ -59,12 +59,11 @@ extern "C" void kernel_main() {
 	PMM::initialise(memory_map, kernel_page, kernel_size_pages);
 	VMM::initialise(kernel_page, kernel_size_pages);
 
-	call_global_constructors(); //This would usually be done before the kernel main function is even called, but some of our global constructors rely on the memory manager and such we have to wait until they are initialised before we call the global constructors	
+	call_global_constructors(); //This would usually be done before the kernel main function is even called, but some of our global constructors rely on the memory manager and such we have to wait until they are initialised before we call the global constructors
 	
 	Block32::initialise();
 	Heap::initialise();
 	
-	TextRenderer::draw_string((char*) "\r\nit all worked");
-
+	TextRenderer::draw_string((char*) "AnimeOS is operational! :)\r\n");
 	hang();
 }
