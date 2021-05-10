@@ -6,4 +6,5 @@ namespace Heap {
 	void initialise();
 	void* malloc(uint64_t);
 	void free(void*);
+	void debug();
 };

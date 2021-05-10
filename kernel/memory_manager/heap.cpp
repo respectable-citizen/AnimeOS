@@ -27,11 +27,84 @@ namespace Heap {
 	}
 
 	void* malloc(uint64_t bytes) {
-		bytes = 1;
+		for (uint64_t i = 0; i < m_heap_descriptors.size(); i++) {
+			HeapDescriptor descriptor = m_heap_descriptors[i];
+			if (descriptor.free && descriptor.size >= bytes) {
+				if (descriptor.size == bytes) {
+					//Descriptor is same as required size so we don't need to split it
+					descriptor.free = 0;
+					m_heap_descriptors.set(i, descriptor);
+					return descriptor.start;
+				} else {
+					//The new descriptor goes directly after the free descriptor that it's taking memory from
+					//Update old descriptor
+					descriptor.size -= bytes;
+					m_heap_descriptors.set(i, descriptor);	
+					
+					//Create new descriptpr
+					HeapDescriptor new_descriptor;
+					new_descriptor.start = (void*) ((uint64_t) descriptor.start + descriptor.size);
+					new_descriptor.size = bytes;
+					new_descriptor.free = 0;
+					m_heap_descriptors.insert(i + 1, new_descriptor);
+
+					return new_descriptor.start;
+				}
+			}
+		}
+
+		//If we haven't returned by this point the heap must be out of memory, later on this should expand the heap
+		TextRenderer::kernel_panic((char*) "Kernel heap ran out of memory");
 		return nullptr;
 	}
 
+	void debug() {
+		for (uint64_t i = 0; i < m_heap_descriptors.size(); i++) {
+			HeapDescriptor descriptor = m_heap_descriptors[i];
+			TextRenderer::draw_string((char*) "start(");
+			TextRenderer::draw_number((uint64_t) descriptor.start);
+			TextRenderer::draw_string((char*) ") : size(");
+			TextRenderer::draw_number(descriptor.size);
+			TextRenderer::draw_string((char*) ") : free(");
+			TextRenderer::draw_number(descriptor.free);
+			TextRenderer::draw_string((char*) ")\r\n");
+		}
+	}
+
 	void free(void *p) {
-		p = (void*) 1;
+		for (uint64_t i = 0; i < m_heap_descriptors.size(); i++) {
+			HeapDescriptor descriptor = m_heap_descriptors[i];
+			if (descriptor.start == p) {
+				if (descriptor.free) TextRenderer::kernel_panic((char*) "Attempt to double free a pointer");
+
+				descriptor.free = 1;
+				m_heap_descriptors.set(i, descriptor);
+				
+				//The rest of this code is just to merge any free sections to the left and right, it's maybe a little bit confusing because we have to handle indexes changing when we delete an item (is there a better way to write the vector class to avoid this?)
+
+				//Merge right
+				if ((i + 1) < m_heap_descriptors.size()) {
+					HeapDescriptor right_descriptor = m_heap_descriptors[i + 1];
+					if (right_descriptor.free) {
+						descriptor.size += right_descriptor.size;
+						m_heap_descriptors.set(i, descriptor);
+						m_heap_descriptors.remove(i + 1);
+					}
+				}
+
+				//Merge left
+				if (i != 0) {
+					HeapDescriptor left_descriptor = m_heap_descriptors[i - 1];
+					if (left_descriptor.free) {
+						left_descriptor.size += descriptor.size;
+						m_heap_descriptors.set(i - 1, left_descriptor);
+						m_heap_descriptors.remove(i);
+					}
+				}
+				return;
+			}
+		}
+
+		TextRenderer::kernel_panic((char*) "Attempt to free invalid pointer");
 	}
 };

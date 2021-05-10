@@ -1,5 +1,5 @@
 # AnimeOS
-An x64 UEFI hobby OS.
+An x64 UEFI hobby OS dedicated to all forms of degeneracy.
 
 [FLOW.md](FLOW.md) describes the order of tasks which are executed to get the system running, this is just for my reference.
 
@@ -13,9 +13,11 @@ Done:
 * Memory manager
 * GDT
 * IDT
+* Heap
 
 Planned (Could change at any time) (also in a very vague order):
-* Heap (next)
+* PCI (In progress)
+* NVMe
 * Scheduler
 * SMP
 * initrd
