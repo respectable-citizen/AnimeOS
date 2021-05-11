@@ -53,7 +53,7 @@ namespace TextRenderer {
 				if (pixel_bit) {
 					uint32_t cursor_x_offset = m_cursor_x * 7;
 					uint32_t cursor_y_offset = m_cursor_y * 10 + 1;
-					draw_pixel(x + cursor_x_offset, y + cursor_y_offset);
+					draw_pixel(x + cursor_x_offset, y + cursor_y_offset, true);
 				}
 			}
 		}
@@ -90,8 +90,8 @@ namespace TextRenderer {
 	}
 	
 	void fill_screen() {
-		for (uint32_t y = 0; y < m_graphics_info.height; y++) {
-			for (uint32_t x = 0; x < m_graphics_info.width; x++) {
+		for (uint32_t x = 0; x < m_graphics_info.width; x++) {
+			for (uint32_t y = 0; y < m_graphics_info.height; y++) {
 				draw_pixel(x, y);
 			}
 		}				

@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 
-#define TABLE_ENTRY_PRESENT 0b1
-#define TABLE_ENTRY_READWRITE 0b10
+#define TABLE_ENTRY_PRESENT 1 << 0
+#define TABLE_ENTRY_READWRITE 1 << 1
 
 #define KERNEL_MEMORY_PAGES 524288 //The first KERNEL_MEMORY_PAGES of memory are identity mapped and used solely for the kernel
 

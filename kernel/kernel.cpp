@@ -16,6 +16,8 @@
 #include "memory_manager/block32.hpp"
 #include "memory_manager/heap.hpp"
 
+#include "cpu/cpu.hpp"
+
 #include "text_renderer/text_renderer.hpp"
 
 typedef void (*constructor)();
@@ -30,7 +32,7 @@ extern "C" void kernel_main() {
 	
 	//Read kernel arguments out of RDI register and decompose the struct into individual variables
 	KernelArguments *kernel_arguments;
-	asm volatile ("mov %%rdi, %0": "=g"(kernel_arguments)::"memory");
+	asm("mov %%rdi, %0": "=g"(kernel_arguments)::"memory");
 
 	MemoryMap memory_map = kernel_arguments->memory_map;
 	GraphicsInfo graphics_info = kernel_arguments->graphics_info;
@@ -42,7 +44,7 @@ extern "C" void kernel_main() {
 	TextRenderer::set_color(0xff0000);
 	TextRenderer::draw_string((char*) "AnimeOS booting\r\n\r\n");
 	TextRenderer::set_color(0xffffff);
-		
+
 	//handle_constructors();
 	TextRenderer::draw_string((char*) "Initialising GDT\r\n");
 	GDT::initialise();
@@ -63,6 +65,9 @@ extern "C" void kernel_main() {
 	
 	Block32::initialise();
 	Heap::initialise();
+	
+	TextRenderer::draw_string((char*) "Initialising CPU\r\n");
+	CPU::initialise(); //From this point on we can use advanced CPU features
 	
 	TextRenderer::draw_string((char*) "AnimeOS is operational! :)\r\n");
 	hang();

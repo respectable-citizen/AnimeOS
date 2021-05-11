@@ -29,4 +29,8 @@ clang -I efi -I common -I kernel -I kernel/text_renderer -I kernel/lib -I kernel
 				kernel/gdt/gdt.s \
 				kernel/interrupts/interrupts.cpp \
 				kernel/interrupts/isr.cpp \
+				kernel/cpu/cpu.cpp \
+				kernel/cpu/cpuid.s \
+				kernel/cpu/cpuid.cpp \
+				kernel/cpu/msr.cpp \
 				-o kernel.elf
