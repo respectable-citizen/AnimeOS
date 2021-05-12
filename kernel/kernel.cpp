@@ -51,7 +51,10 @@ extern "C" void kernel_main() {
 	
 	TextRenderer::draw_string((char*) "Initialising IDT\r\n");
 	Interrupts::initialise();
-
+	
+	TextRenderer::draw_string((char*) "Initialising CPU\r\n");
+	CPU::initialise(); //From this point on we can use advanced CPU features
+	
 	TextRenderer::draw_string((char*) "Initialising memory manager\r\n");
 
 	uint64_t kernel_page = PMM::address_to_page_number((void*) kernel_start);
@@ -65,10 +68,10 @@ extern "C" void kernel_main() {
 	
 	Block32::initialise();
 	Heap::initialise();
-	
-	TextRenderer::draw_string((char*) "Initialising CPU\r\n");
-	CPU::initialise(); //From this point on we can use advanced CPU features
-	
+
+	//for (uint64_t i = 0; i < 1000000000; i++) {};
+	TextRenderer::set_color(0x0000ff);
+	TextRenderer::fill_screen();
 	TextRenderer::draw_string((char*) "AnimeOS is operational! :)\r\n");
 	hang();
 }
