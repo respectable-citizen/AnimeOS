@@ -1,7 +1,5 @@
 #include "pmm.hpp"
 
-#include "vmm.hpp"
-
 #include "text_renderer/text_renderer.hpp"
 
 #include "utils.hpp"
@@ -11,10 +9,8 @@ namespace PMM {
 		uint8_t *m_page_map;
 		uint64_t m_page_map_size; //In pages
 
-		//These fields are purely informational, they are kept up to date by the corresponding functions
-		uint64_t m_total_pages; //This is NOT representational of the amount of installed RAM, it is simply the number of pages reported by the memory map (which may have inconsistencies)
-		uint64_t m_free_pages;
-	
+		uint64_t m_total_pages;
+
 		EFI_MEMORY_DESCRIPTOR* get_memory_descriptor(MemoryMap memory_map, uint32_t index) {
 			return (EFI_MEMORY_DESCRIPTOR*) ((uint8_t*) memory_map.memory_descriptors + (memory_map.descriptor_size * index));
 		}
@@ -27,7 +23,6 @@ namespace PMM {
 		m_total_pages = (descriptor->PhysicalStart / 4096) + descriptor->NumberOfPages;
 		
 		//Find a block of pages large enough to store our page map
-		m_page_map_size = bytes_to_pages(m_total_pages);
 		bool allocated_page_map = false;
 		for (uint32_t i = 0; i < descriptor_count; i++) {
 			EFI_MEMORY_DESCRIPTOR *descriptor = get_memory_descriptor(memory_map, i);
@@ -46,7 +41,6 @@ namespace PMM {
 		}
 
 		//Let's now fill the page map with real information, we do this by assuming all pages are in use, and slowly freeing the pages as we find out we can use them
-		m_free_pages = 0;
 		lock_pages(0, m_total_pages);
 
 		for (uint32_t i = 0; i < descriptor_count; i++) {
@@ -65,79 +59,28 @@ namespace PMM {
 		//Mark kernelspace as reserved memory
 		lock_pages(kernel_page, kernel_size_pages);
 	}
-	
-	uint8_t get_page(uint64_t page_number) {
-		return m_page_map[page_number];
-	}
-	
-	uint64_t set_page_status(uint64_t page_start, uint64_t page_count, uint8_t page_status) {
-		uint64_t modified_pages = 0;
-		for (uint64_t i = 0; i < page_count; i++) {
-			uint8_t page = get_page(page_start + i);
-			if (page != page_status) {
-				m_page_map[page_start + i] = page_status;
-				modified_pages++;
-			}
-		}
-		return modified_pages;
-	}
-	
-	void lock_pages(uint64_t page_start, uint64_t page_count) {
-		m_free_pages -= set_page_status(page_start, page_count, PAGE_LOCKED);
+
+	void lock_pages(uint64_t page, uint64_t page_count) {
+		for (uint64_t i = 0; i < page_count; i++) m_page_map[page + i] = PAGE_LOCKED;
 	}
 
-	void free_pages(uint64_t page_start, uint64_t page_count) {
-		m_free_pages += set_page_status(page_start, page_count, PAGE_FREE);
+	void free_pages(uint64_t page, uint64_t page_count) {
+		for (uint64_t i = 0; i < page_count; i++) m_page_map[page + i] = PAGE_FREE;
 	}
 
-	void* allocate_pages(uint64_t page_count, bool kernelspace, PageSize page_size, bool map) {
-		uint64_t contiguous_pages = 0;
-		uint64_t contiguous_pages_start = 0;
-
-		//Choose which address space to search for available pages
-		uint64_t start_page = 0;
-		uint64_t end_page = KERNEL_MEMORY_PAGES;
-
-		if (!kernelspace) {
-			start_page = KERNEL_MEMORY_PAGES;
-			end_page = m_total_pages;
-		}
-
-		for (uint64_t i = start_page; i < end_page; i++) {
-			uint8_t page = get_page(i);
-			if (page == PAGE_FREE) {
-				if (contiguous_pages == 0) contiguous_pages_start = i;
-				contiguous_pages++;
-				if (contiguous_pages == page_count) {
-					lock_pages(contiguous_pages_start, page_count);
-					if (map) VMM::set_translation(contiguous_pages_start, contiguous_pages_start, page_count, page_size);
-
-					return page_number_to_address(contiguous_pages_start);
-				}
+	uint64_t request_page() {
+		for (uint64_t i = 0; i < m_total_pages; i++) {
+			if (m_page_map[i] == PAGE_FREE) {
+				lock_pages(i, 1);
+				return i;
 			}
 		}
 
-		if (kernelspace) {
-			TextRenderer::kernel_panic((char*) "Could not find enough contiguous pages in kernelspace to allocate memory.");
-		} else {
-			TextRenderer::kernel_panic((char*) "Could not find enough contiguous pages in userspace to allocate memory.");
-		}
-		return nullptr;
-	}
-
-	void* allocate_kernel_pages(uint64_t page_count, PageSize page_size) {
-		return allocate_pages(page_count, true, page_size, false);
-	}
-
-	void* allocate_user_pages(uint64_t page_count, PageSize page_size) {
-		return allocate_pages(page_count, false, page_size, true);
+		TextRenderer::kernel_panic((char*) "PMM could not find a free page to allocate");
+		return 0;
 	}
 
 	void* page_map() {
 		return m_page_map;
-	}
-
-	uint64_t page_map_size() {
-		return m_page_map_size;
 	}
 }

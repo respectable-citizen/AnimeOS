@@ -1,5 +1,4 @@
-#ifndef PMM_H
-#define PMM_H
+#pragma once
 
 #include "../common/memory_map.h"
 
@@ -11,14 +10,12 @@
 namespace PMM {
 	void initialise(MemoryMap, uint64_t, uint64_t);
 
-	uint8_t get_page(uint64_t);
-	uint64_t set_page_status(uint64_t, uint64_t, uint8_t);
 	void lock_pages(uint64_t, uint64_t);
 	void free_pages(uint64_t, uint64_t);
-	void* allocate_pages(uint64_t, bool, PageSize, bool);
-	void* allocate_kernel_pages(uint64_t, PageSize = PageSize::FOUR_KIB);
-	void* allocate_user_pages(uint64_t, PageSize = PageSize::FOUR_KIB);
+	uint64_t request_page();
 
+	void* page_map();
+	
 	inline uint64_t address_to_page_number(void* address) {
 		return (uint64_t) address / 4096;
 	}
@@ -34,9 +31,4 @@ namespace PMM {
 	inline uint64_t pages_to_bytes(uint64_t pages) {
 		return 4096 * pages;
 	}
-
-	void* page_map();
-	uint64_t page_map_size();
 };
-
-#endif
