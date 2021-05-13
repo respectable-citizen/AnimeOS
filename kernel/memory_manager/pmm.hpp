@@ -13,6 +13,8 @@ namespace PMM {
 	void lock_pages(uint64_t, uint64_t);
 	void free_pages(uint64_t, uint64_t);
 	uint64_t request_page();
+	void* alloc_page();
+	uint64_t pages_for_page_map();
 
 	void* page_map();
 	

@@ -9,12 +9,16 @@ extern "C" void* memcpy(void *destination, void *source, uint64_t size) {
 	return destination;
 }
 extern "C" void* memmove(void *destination, void *source, uint64_t size) {
-	uint64_t page_count = PMM::bytes_to_pages(size);
+	destination = (void*) 0;
+	source = 0;
+	size = 0;
+	/*uint64_t page_count = PMM::bytes_to_pages(size);
 	void *temporary_memory = PMM::allocate_kernel_pages(page_count);
 	memcpy(temporary_memory, source, size);
 	memcpy(destination, temporary_memory, size);
 	PMM::free_pages(PMM::address_to_page_number(temporary_memory), page_count);
-	return destination;
+	return destination;*/
+	return (void*) 0;
 }
 
 

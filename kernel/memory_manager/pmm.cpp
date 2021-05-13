@@ -7,7 +7,7 @@
 namespace PMM {
 	namespace {
 		uint8_t *m_page_map;
-		uint64_t m_page_map_size; //In pages
+		uint64_t m_pages_for_page_map;
 
 		uint64_t m_total_pages;
 
@@ -21,13 +21,14 @@ namespace PMM {
 		uint32_t descriptor_count = memory_map.memory_map_size / memory_map.descriptor_size;
 		EFI_MEMORY_DESCRIPTOR *descriptor = get_memory_descriptor(memory_map, descriptor_count - 1);
 		m_total_pages = (descriptor->PhysicalStart / 4096) + descriptor->NumberOfPages;
+		m_pages_for_page_map = bytes_to_pages(m_total_pages);
 		
 		//Find a block of pages large enough to store our page map
 		bool allocated_page_map = false;
 		for (uint32_t i = 0; i < descriptor_count; i++) {
 			EFI_MEMORY_DESCRIPTOR *descriptor = get_memory_descriptor(memory_map, i);
 			
-			if (descriptor->Type == EfiConventionalMemory && descriptor->NumberOfPages >= m_page_map_size) {
+			if (descriptor->Type == EfiConventionalMemory && descriptor->NumberOfPages >= m_pages_for_page_map) {
 				m_page_map = (uint8_t*) descriptor->PhysicalStart;
 				allocated_page_map = true;
 				break;
@@ -54,7 +55,7 @@ namespace PMM {
 		}
 
 		//Mark page map as reserved memory
-		lock_pages(address_to_page_number(m_page_map), m_page_map_size);
+		lock_pages(address_to_page_number(m_page_map), m_pages_for_page_map);
 
 		//Mark kernelspace as reserved memory
 		lock_pages(kernel_page, kernel_size_pages);
@@ -80,7 +81,15 @@ namespace PMM {
 		return 0;
 	}
 
+	void* alloc_page() {
+		return PMM::page_number_to_address(request_page());
+	}
+
 	void* page_map() {
 		return m_page_map;
+	}
+	
+	uint64_t pages_for_page_map() {
+		return m_pages_for_page_map;
 	}
 }

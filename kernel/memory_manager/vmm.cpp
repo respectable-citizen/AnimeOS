@@ -7,83 +7,86 @@
 
 #include "utils.hpp"
 
+#define REMOVE_FLAGS 0xFFFFF000
+
 namespace VMM {
 	namespace {
-		uint64_t *kernel_paging_table;
-		uint64_t *current_paging_table;
-		uint64_t FLAG_PRESENT = 1 << 0;
-		uint64_t FLAG_READWRITE = 1 << 1;
-		uint64_t FLAG_WT = 1 << 3;
-		uint64_t FLAG_PAT = 1 << 7;
-		uint64_t FLAGS_DEFAULT = FLAG_PRESENT | FLAG_READWRITE;
+		uint64_t *m_PML4;		
 	}
 
-
-	void initialise(uint64_t kernel_page, uint64_t kernel_size_pages) {
-		//Check if kernel is compatible with our memory layout
-		if ((kernel_page + kernel_size_pages) >= KERNEL_MEMORY_PAGES) {
-			TextRenderer::kernel_panic((char*) "Kernel must end before 2GiB in memory.");
-		}
-
-		//Setup kernel page table
-		kernel_paging_table = (uint64_t*) PMM::allocate_kernel_pages(1);
-		memset((void*) kernel_paging_table, 0, 4096);
-		current_paging_table = kernel_paging_table;
+	void initialise(void *kernel_start, void *kernel_end) {
+		//Allocate page memory for PML4
+		m_PML4 = (uint64_t*) PMM::alloc_page();
+		memset((void*) m_PML4, 0, 4096);
 		
-		TextRenderer::draw_number(FLAG_PRESENT);
-		TextRenderer::draw_string((char*) "\r\n");
 		//Identity map required amount of pages for kernel
-		VMM::set_translation(0, 0, KERNEL_MEMORY_PAGES);
+		map_space(kernel_start, kernel_end, kernel_start, PageFlag::Default, CachingMode::WriteBack);
 		
 		//Identity map the framebuffer
-		uint64_t framebuffer_page = PMM::address_to_page_number(TextRenderer::graphics_info().address);
-		VMM::set_translation(framebuffer_page, framebuffer_page, PMM::bytes_to_pages(TextRenderer::graphics_info().buffer_size), FLAGS_DEFAULT);
+		void *framebuffer_start = TextRenderer::graphics_info().address;
+		void *framebuffer_end = (void*) ((uint64_t) framebuffer_start + (uint64_t) TextRenderer::graphics_info().buffer_size);
+		map_space(framebuffer_start, framebuffer_end, framebuffer_start, PageFlag::Default, CachingMode::WriteBack);
 		
 		//Identity map the PMM page map
-		//uint64_t page_map = PMM::address_to_page_number(PMM::page_map());
-		//VMM::set_translation(page_map, page_map, PMM::page_map_size());
-		
-		asm("mov %0, %%cr3" : : "r" (current_paging_table)); //Now that we have setup the kernel VAS, we can safely enable paging without messing anything up
+		void *page_map_start = PMM::page_map();
+		void *page_map_end = (void*) ((uint64_t) page_map_start + (PMM::pages_for_page_map() * 4096));
+		map_space(page_map_start, page_map_end, page_map_start, PageFlag::Default, CachingMode::WriteCombine);
+
+		asm("mov %0, %%cr3" : : "r" (m_PML4)); //Now that we have setup all our required pages, we can safely enable paging without messing anything up
 	}
 
-	void set_translation(uint64_t physical_page, uint64_t virtual_page, uint64_t page_count, uint64_t flags) {
-		//if (page_size != PageSize::FOUR_KIB) TextRenderer::kernel_panic((char*) "Only 4KiB pages are currently supported.");
-		TextRenderer::draw_number(flags);
-		TextRenderer::draw_string((char*) "\r\n");
-		for (uint64_t i = 0; i < page_count; i++)
-			set_page_translation(physical_page + i, virtual_page + i, flags);
+	void map(void *physical_address, void *virtual_address, uint64_t flags, CachingMode caching_mode) {
+		uint64_t vaddr = (uint64_t) virtual_address;
+		vaddr >>= 12;
+		uint16_t PML1_index = vaddr & 0x1ff;
+		vaddr >>= 9;
+		uint16_t PML2_index = vaddr & 0x1ff;
+		vaddr >>= 9;
+		uint16_t PML3_index = vaddr & 0x1ff;
+		vaddr >>= 9;
+		uint16_t PML4_index = vaddr & 0x1ff;
+
+		uint64_t *PML3 = (uint64_t*) (m_PML4[PML4_index] & REMOVE_FLAGS);
+		if (!PML3) {
+			PML3 = (uint64_t*) PMM::alloc_page();
+			memset((void*) PML3, 0, 4096);
+			m_PML4[PML4_index] = ((uint64_t) PML3) | flags;
+		}
+
+		uint64_t *PML2 = (uint64_t*) (PML3[PML3_index] & REMOVE_FLAGS);
+		if (!PML2) {
+			PML2 = (uint64_t*) PMM::alloc_page();
+			memset((void*) PML2, 0, 4096);
+			PML3[PML3_index] = ((uint64_t) PML2) | flags;
+		}
+
+		uint64_t *PML1 = (uint64_t*) (PML2[PML2_index] & REMOVE_FLAGS);
+		if (!PML1) {
+			PML1 = (uint64_t*) PMM::alloc_page();
+			memset((void*) PML1, 0, 4096);
+			PML2[PML2_index] = ((uint64_t) PML1) | flags;
+		}
+
+		if (caching_mode == CachingMode::WriteCombine) {
+			flags |= PageFlag::PAT; //Write combining is the 5th item in the PAT
+		}
+
+		PML1[PML1_index] = ((uint64_t) physical_address) | flags;
 	}
 	
-	void set_page_translation(uint64_t physical_page, uint64_t virtual_page, uint64_t flags) {
-		uint8_t page_size = 4;
-
-		uint64_t *current_table = current_paging_table;
-		for (uint8_t i = 0; i < page_size; i++) {
-			uint64_t shift_amount = 9 * (3 - i);
-			uint64_t mask = 0x1FFULL << shift_amount;
-			uint64_t table_index = (virtual_page & mask) >> shift_amount;
-	
-			//We have reached the required table depth, time to create the actual table entry
-			if (i == (page_size - 1)) {
-				uint64_t address = physical_page << 12;
-				asm volatile("invlpg (%0)" :: "r" (address) : "memory");
-				current_table[table_index] = (address | flags);
-				break;
-			}
-
-			void *subtable_address;
-			if (current_table[table_index] & FLAG_PRESENT) {
-				subtable_address = (void*) (((current_table[table_index]) >> 12) << 12); //We do this bitshifting to clear the flags and get just the address
-			} else {
-				//Table doesn't yet exist, allocate it
-				void *sub_table = PMM::allocate_kernel_pages(1);
-				memset(sub_table, 0, 4096);
-				current_table[table_index] = ((uint64_t) sub_table | flags);
-				subtable_address = (uint64_t*) sub_table;
-			}
-
-			current_table = (uint64_t*) subtable_address;
+	void map_space(void *physical_start, void *physical_end, void *virtual_address, uint64_t flags, CachingMode caching_mode) {
+		while (physical_start < physical_end) {
+			map(physical_start, virtual_address, flags, caching_mode);
+			
+			physical_start = (void*) ((uint64_t) physical_start + 4096);
+			virtual_address = (void*) ((uint64_t) virtual_address + 4096);
 		}
 	}
+/*
+	void* allocate_pages(uint64_t page_count) {
+		for (uint64_t i = 0; i < page_count; i++) {
+			void *physical_page_address = PMM::alloc_page();
 
+		}
+	}*/
 }
