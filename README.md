@@ -16,7 +16,8 @@ Done:
 * Heap
 
 Planned (Could change at any time) (also in a very vague order):
-* PCI (In progress)
+* Refactor codebase and write combining for framebuffer (In progress)
+* PCI
 * NVMe
 * Scheduler
 * SMP
