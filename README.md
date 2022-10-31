@@ -1,7 +1,7 @@
 # AnimeOS
 **Notice: This project is paused for now as I want to write my own language, at some point in time I would like to rewrite this project in said language. I don't think the current codebase runs (or, not properly at least) because I was rewriting the project when I stopped working on it.**
 
-An x64 UEFI OS dedicated to all forms of degeneracy.
+An x64 UEFI OS.
 
 [FLOW.md](FLOW.md) describes the order of tasks which are executed to get the system running, this is just for my reference.
 
